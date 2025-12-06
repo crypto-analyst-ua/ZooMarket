@@ -1,11 +1,11 @@
 // Конфігурація Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyAF4fWjkdNCUH-1lhfSF3rjqhEV8Anaj_Q",
-  authDomain: "instruforge.firebaseapp.com",
-  projectId: "instruforge",
-  storageBucket: "instruforge.firebasestorage.app",
-  messagingSenderId: "343370200187",
-  appId: "1:343370200187:web:852f32b4fb1fb53836dede"
+  apiKey: "AIzaSyB1FdSLaCxPT5hLsGC04sFkjXZqDJY7FS4",
+  authDomain: "zoomarket-ua.firebaseapp.com",
+  projectId: "zoomarket-ua",
+  storageBucket: "zoomarket-ua.firebasestorage.app",
+  messagingSenderId: "244811352090",
+  appId: "1:244811352090:web:76adf3751b719a342569a3"
 };
 
 // Константи для EmailJS
