@@ -13,14 +13,14 @@ const EMAILJS_SERVICE_ID = "boltmaster-2025";
 const EMAILJS_TEMPLATE_ID = "template_2csi2fp";
 const EMAILJS_USER_ID = "hYmYimcQ5x5Mu_skB";
 
-// Массив файлов с товарами для зоомагазина
+// Массив файлов с товарами для FashionStore
 const PRODUCT_FILES = [
-    'products1.json', // Корми для собак
-    'products2.json', // Корми для кішок
-    'products3.json', // Товари для грызунів
-    'products4.json', // Акваріумні товари
-    'products5.json', // Іграшки та аксесуари
-    'products6.json'  // Ветеринарні препарати
+    'products1.json',
+    'products2.json', 
+    'products3.json',
+    'products4.json',
+    'products5.json',
+    'products6.json'
 ];
 
 // Ініціалізація Firebase
@@ -28,1125 +28,59 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
 
-// Константи додатка для зоомагазина
-const ADMIN_PASSWORD = "Lenok1378@";
-const CART_STORAGE_KEY = "zoomarket_cart";
-const FAVORITES_STORAGE_KEY = "zoomarket_favorites";
-const FEED_URL_KEY = "zoomarket_feed_url";
-const FEED_UPDATE_TIME_KEY = "zoomarket_feed_update";
-const VIEW_MODE_KEY = "zoomarket_view_mode";
-const ADMINS_STORAGE_KEY = "zoomarket_admins";
+// Константи додатка
+const ADMIN_PASSWORD = "FashionStore2024!";
+const CART_STORAGE_KEY = "fashionstore_cart";
+const FAVORITES_STORAGE_KEY = "fashionstore_favorites";
+const FEED_URL_KEY = "fashionstore_feed_url";
+const FEED_UPDATE_TIME_KEY = "fashionstore_feed_update";
+const VIEW_MODE_KEY = "fashionstore_view_mode";
+const ADMINS_STORAGE_KEY = "fashionstore_admins";
 
-// ===== СЛОВНИК ПЕРЕКЛАДУ КАТЕГОРІЙ ДЛЯ ЗООТОВАРІВ =====
+// ===== СЛОВНИК ПЕРЕКЛАДУ КАТЕГОРІЙ ДЛЯ ZOOMARKET =====
 const categoryTranslations = {
     "Корм для собак": "Корм для собак",
-    "Корм для кошек": "Корм для кішок",
-    "Корм для кішок": "Корм для кішок",
-    "Товары для грызунов": "Товари для гризунів",
-    "Товари для гризунів": "Товари для гризунів",
-    "Аквариумные товары": "Акваріумні товари",
-    "Акваріумні товари": "Акваріумні товари",
-    "Игрушки и аксессуары": "Іграшки та аксесуари",
-    "Іграшки та аксесуари": "Іграшки та аксесуари",
-    "Ветеринарные препараты": "Ветеринарні препарати",
-    "Ветеринарні препарати": "Ветеринарні препарати",
-    "Для собак": "Для собак",
-    "Для кішок": "Для кішок",
-    "Для гризунів": "Для гризунів",
-    "Для птахів": "Для птахів",
-    "Для рибок": "Для рибок",
-    "Аксесуари": "Аксесуари",
-    "Косметика": "Косметика",
-    "Лежанки": "Лежанки",
-    "Без категорії": "Без категорії",
-    "Без категории": "Без категорії",
-    "Застосувати": "Застосувати"
+    "Корм для котів": "Корм для котів",
+    "Корм для гризунів": "Корм для гризунів",
+    "Корм для птахів": "Корм для птахів",
+    "Корм для риб": "Корм для риб",
+    "Аксесуари для собак": "Аксесуари для собак",
+    "Аксесуари для котів": "Аксесуари для котів",
+    "Акваріуми": "Акваріуми",
+    "Терраріуми": "Терраріуми",
+    "Клітки": "Клітки",
+    "Переноски": "Переноски",
+    "Іграшки": "Іграшки",
+    "Вітаміни": "Вітаміни",
+    "Ліки": "Ліки",
+    "Засоби догляду": "Засоби догляду",
+    "Догляд за шерстю": "Догляд за шерстю",
+    "Наповнювачі": "Наповнювачі",
+    "Миски": "Миски",
+    "Лежаки": "Лежаки",
+    "Шлейки": "Шлейки",
+    "Повідці": "Повідці",
+    "Ошийники": "Ошийники",
+    "Одяг для тварин": "Одяг для тварин",
+    "Ласощі": "Ласощі",
+    "Гігієна": "Гігієна",
+    "Ветеринарія": "Ветеринарія",
+    "Дресирування": "Дресирування",
+    "Водоводівники": "Водоводівники",
+    "Фільтри": "Фільтри",
+    "Обігрівачі": "Обігрівачі",
+    "Новинки": "Новинки",
+    "Акції": "Акції",
+    "Без категорії": "Без категорії"
 };
 
-// ===== УЛУЧШЕННАЯ СИСТЕМА ПОИСКА ДЛЯ ЗООТОВАРІВ =====
-
-// Константы для оптимизации поиска
-const SEARCH_CONFIG = {
-  MAX_RESULTS: 1000,
-  DEBOUNCE_DELAY: 150,
-  MAX_HISTORY: 10,
-  MAX_CACHE_SIZE: 200,
-  MIN_QUERY_LENGTH: 2
-};
-
-// Расширенный словарь синонимов для поиска зоотоваров
-const searchSynonyms = {
-  // Русские синонимы
-  'корм': ['питание', 'еда', 'провиант'],
-  'собака': ['пес', 'пёс', 'собачка', 'щенок'],
-  'кошка': ['кот', 'котенок', 'котик', 'котенок'],
-  'грызун': ['хомяк', 'крыса', 'мышь', 'морская свинка', 'кролик'],
-  'аквариум': ['рыбки', 'аквариумные рыбки', 'аквариумистика'],
-  'игрушка': ['мячик', 'погремушка', 'развлечение', 'забава'],
-  'ветеринарный': ['ветпрепарат', 'лекарство', 'ветеринарка', 'ветеринария'],
-  'поводок': ['повод', 'ремень', 'привязь'],
-  'ошейник': ['шейник', 'ошейник'],
-  'лежанка': ['подстилка', 'коврик', 'место', 'домик'],
-  'шампунь': ['мыло', 'моющее', 'очиститель'],
-  
-  // Украинские синонимы
-  'корм': ['їжа', 'харчування', 'провіант'],
-  'собака': ['пес', 'собачка', 'щеня'],
-  'кішка': ['кіт', 'кошеня', 'котик'],
-  'гризун': ['хом’як', 'пацюк', 'миша', 'морська свинка', 'кролик'],
-  'акваріум': ['рибки', 'акваріумні рибки', 'акваріумістика'],
-  'іграшка': ['м\'ячик', 'брязкальце', 'розвага', 'забава'],
-  'ветеринарний': ['ветпрепарат', 'ліки', 'ветеринарка'],
-  'поводок': ['повідок', 'ремінь', 'прив\'яз'],
-  'нашийник': ['ошийник', 'шейник'],
-  'лежанка': ['підстилка', 'килимок', 'місце', 'будиночок'],
-  'шампунь': ['мило', 'миючий', 'очисник']
-};
-
-// Словарь опечаток для зоотоваров
-const searchTypos = {
-  'корм': ['корм', 'корма', 'корму', 'кормом', 'кормы'],
-  'собака': ['сабака', 'собака', 'собаки', 'собаке', 'собаку'],
-  'кошка': ['кошка', 'кошки', 'кошке', 'кошку', 'кошек'],
-  'аквариум': ['акваиум', 'аквариум', 'аквариума', 'аквариуму', 'аквариумом'],
-  'игрушка': ['игрушка', 'игрушки', 'игрушке', 'игрушку', 'игрушек'],
-  'ветеринарный': ['ветеринарный', 'ветеринарного', 'ветеринарному', 'ветеринарным'],
-  'хомяк': ['хомяк', 'хамяк', 'хомяка', 'хомяку', 'хомяком'],
-  'птица': ['птица', 'птицы', 'птице', 'птицу', 'птицей']
-};
-
-// Глобальные переменные для поиска
-let searchTimeout = null;
-const searchCache = new Map();
-let searchLoading = false;
-const SEARCH_HISTORY_KEY = "zoomarket_search_history";
-
-// Переменные для аудио-поиска
-let recognition = null;
-let isListening = false;
-
-// Функція для перевода категорий
+// Функция для перевода категорий
 function translateCategory(category) {
     if (!category) return '';
     return categoryTranslations[category] || category;
 }
 
-// Функция исправления опечаток
-function fixCommonTypos(query) {
-  if (!query || query.length < 2) return query;
-  
-  let fixedQuery = query.toLowerCase();
-  
-  Object.entries(searchTypos).forEach(([correct, mistakes]) => {
-    mistakes.forEach(mistake => {
-      if (fixedQuery.includes(mistake)) {
-        fixedQuery = fixedQuery.replace(mistake, correct);
-      }
-    });
-  });
-  
-  return fixedQuery;
-}
-
-// Улучшенная нормализация текста
-function normalizeSearchTerm(term) {
-  if (!term) return '';
-  
-  let normalized = term.toLowerCase()
-    .replace(/[єё]/g, 'е')
-    .replace(/[ї]/g, 'и') 
-    .replace(/[і]/g, 'и')
-    .replace(/[ґ]/g, 'г')
-    .replace(/[ы]/g, 'и')
-    .replace(/[э]/g, 'е')
-    .replace(/[ъь]/g, '')
-    .replace(/[^а-яa-z0-9\-\s']/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  
-  // Исправляем опечатки
-  normalized = fixCommonTypos(normalized);
-  
-  return normalized;
-}
-
-// Расширение поискового запроса синонимами
-function expandSearchQuery(query) {
-  const words = query.split(' ');
-  const expanded = [...words];
-  
-  words.forEach(word => {
-    const normalizedWord = normalizeSearchTerm(word);
-    
-    if (searchSynonyms[normalizedWord]) {
-      expanded.push(...searchSynonyms[normalizedWord]);
-    }
-  });
-  
-  return [...new Set(expanded)].join(' ');
-}
-
-// Функция расчета релевантности
-function calculateRelevance(product, searchTerms) {
-  if (!product || !searchTerms) return 0;
-  
-  let score = 0;
-  const searchText = searchTerms.toLowerCase();
-  
-  // Приоритеты совпадений
-  if (product.title && product.title.toLowerCase().includes(searchText)) {
-    score += 100;
-    // Бонус за точное совпадение в начале названия
-    if (product.title.toLowerCase().startsWith(searchText)) score += 50;
-  }
-  
-  if (product.brand && product.brand.toLowerCase().includes(searchText)) score += 50;
-  if (product.category && product.category.toLowerCase().includes(searchText)) score += 30;
-  if (product.description && product.description.toLowerCase().includes(searchText)) score += 10;
-  
-  // Поиск по артикулам и кодам
-  if (product.sku && product.sku.toLowerCase().includes(searchText)) score += 80;
-  
-  // Бонусы за дополнительные параметры
-  if (product.isPopular) score += 20;
-  if (product.isNew) score += 15;
-  if (product.inStock) score += 10;
-  if (product.discount) score += 5;
-  
-  return score;
-}
-
-// Удаление дубликатов в результатах
-function removeDuplicateResults(results) {
-  const seen = new Set();
-  const uniqueResults = [];
-  
-  for (const product of results) {
-    const key = `${product.title}_${product.brand}_${product.price}_${product.sku || ''}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      uniqueResults.push(product);
-    }
-  }
-  
-  return uniqueResults;
-}
-
-// Улучшенная функция поиска с ранжированием
-function searchProductsEnhanced(searchTerm) {
-  if (!searchTerm || searchTerm.trim().length < 1) {
-    return products;
-  }
-  
-  const normalizedSearch = normalizeSearchTerm(searchTerm);
-  const searchWords = normalizedSearch.split(/\s+/).filter(word => word.length >= 1);
-  
-  if (searchWords.length === 0) {
-    return products;
-  }
-  
-  const expandedQuery = expandSearchQuery(normalizedSearch);
-  const expandedWords = expandedQuery.split(/\s+/).filter(word => word.length >= 1);
-  
-  let results = products.filter(product => {
-    if (!product.searchIndex) return false;
-    
-    // Ищем товары, которые содержат ВСЕ слова из запроса
-    const allWordsMatch = searchWords.every(word => 
-      product.searchIndex.includes(word)
-    );
-    
-    // Если не нашли по всем словам, ищем по расширенному запросу
-    if (!allWordsMatch && expandedWords.length > searchWords.length) {
-      return expandedWords.some(word => 
-        product.searchIndex.includes(word)
-      );
-    }
-    
-    return allWordsMatch;
-  });
-  
-  // Ограничение количества результатов
-  if (results.length > SEARCH_CONFIG.MAX_RESULTS) {
-    results = results.slice(0, SEARCH_CONFIG.MAX_RESULTS);
-  }
-  
-  // Ранжирование по релевантности
-  results.forEach(product => {
-    product.relevanceScore = calculateRelevance(product, searchTerm);
-  });
-  
-  // Сортировка по релевантности
-  results.sort((a, b) => {
-    if (b.relevanceScore !== a.relevanceScore) {
-      return b.relevanceScore - a.relevanceScore;
-    }
-    
-    // Вторичная сортировка
-    if (a.isPopular && !b.isPopular) return -1;
-    if (!a.isPopular && b.isPopular) return 1;
-    if (a.isNew && !b.isNew) return -1;
-    if (!a.isNew && b.isNew) return 1;
-    
-    return 0;
-  });
-  
-  // Удаление дубликатов
-  results = removeDuplicateResults(results);
-  
-  return results;
-}
-
-// Основная функция поиска
-function searchProducts(searchTerm) {
-  if (!searchTerm || searchTerm.trim().length < 1) {
-    return products;
-  }
-  
-  return searchProductsEnhanced(searchTerm);
-}
-
-// Управление истории поиска
-function saveToSearchHistory(query) {
-  if (!query || query.trim().length < 2) return;
-  
-  const cleanQuery = query.trim();
-  const history = JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]');
-  const newHistory = [cleanQuery, ...history.filter(item => item !== cleanQuery)].slice(0, SEARCH_CONFIG.MAX_HISTORY);
-  localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(newHistory));
-}
-
-function getSearchHistory() {
-  return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]');
-}
-
-function clearSearchHistory() {
-  localStorage.removeItem(SEARCH_HISTORY_KEY);
-  showNotification('Історію пошуку очищено');
-  
-  // Обновляем отображение подсказок, если они открыты
-  hideSearchSuggestions(false);
-  hideSearchSuggestions(true);
-}
-
-function removeFromSearchHistory(term) {
-  const history = getSearchHistory();
-  const newHistory = history.filter(item => item !== term);
-  localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(newHistory));
-}
-
-// Улучшенные подсказки с историей
-function getEnhancedSearchSuggestions(query) {
-  try {
-    if (!query || query.length < 1) {
-      // Показываем историю поиска когда поле пустое
-      return getSearchHistorySuggestions();
-    }
-    
-    const normalizedQuery = normalizeSearchTerm(query);
-    
-    if (searchCache.has(normalizedQuery)) {
-      return searchCache.get(normalizedQuery);
-    }
-    
-    const suggestions = [];
-    const seen = new Set();
-    
-    const maxProductsToCheck = Math.min(products.length, 200);
-    
-    for (let i = 0; i < maxProductsToCheck; i++) {
-      const product = products[i];
-      if (!product || typeof product !== 'object') continue;
-      
-      const fieldsToCheck = [
-        { field: 'title', type: 'Назва', icon: '🐕', relevance: 10 },
-        { field: 'brand', type: 'Бренд', icon: '🏷️', relevance: 8 },
-        { field: 'category', type: 'Категорія', icon: '📂', relevance: 6 },
-        { field: 'sku', type: 'Артикул', icon: '#️⃣', relevance: 9 }
-      ];
-      
-      for (const { field, type, icon, relevance } of fieldsToCheck) {
-        if (product[field] && !seen.has(product[field])) {
-          const fieldValue = String(product[field]);
-          const normalizedField = normalizeSearchTerm(fieldValue);
-          
-          if (normalizedField.includes(normalizedQuery)) {
-            seen.add(product[field]);
-            suggestions.push({ 
-              value: product[field], 
-              type: type, 
-              icon: icon,
-              productId: product.id,
-              relevance: relevance + (field === 'title' ? 5 : 0)
-            });
-          }
-        }
-      }
-      
-      if (suggestions.length >= 8) break;
-    }
-    
-    // Добавляем быстрые действия если мало результатов
-    if (suggestions.length < 3) {
-      suggestions.push({
-        type: 'action',
-        icon: '🔍',
-        value: `Знайти "${query}"`,
-        action: 'search',
-        relevance: 100
-      });
-    }
-    
-    suggestions.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
-    
-    // Очистка кэша
-    if (searchCache.size > SEARCH_CONFIG.MAX_CACHE_SIZE) {
-      const keys = Array.from(searchCache.keys()).slice(0, 20);
-      keys.forEach(key => searchCache.delete(key));
-    }
-    
-    const finalSuggestions = suggestions.slice(0, 6);
-    searchCache.set(normalizedQuery, finalSuggestions);
-    return finalSuggestions;
-  } catch (error) {
-    console.error("Ошибка в поиске подсказок:", error);
-    return getFallbackSuggestions(query);
-  }
-}
-
-// Подсказки из истории поиска
-function getSearchHistorySuggestions() {
-  const history = getSearchHistory();
-  return history.slice(0, 5).map(term => ({
-    type: 'history',
-    icon: '🕒',
-    value: term,
-    action: 'search',
-    relevance: 100
-  }));
-}
-
-// Резервные подсказки при ошибке
-function getFallbackSuggestions(query) {
-  return [
-    {
-      type: 'action',
-      icon: '🔍',
-      value: `Знайти "${query}"`,
-      action: 'search',
-      relevance: 100
-    }
-  ];
-}
-
-// Функция для экранирования HTML
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// Показать историю поиска
-function showSearchHistorySuggestions(isMobile = false) {
-  const history = getSearchHistory();
-  
-  const searchContainer = isMobile 
-    ? document.querySelector('.search-container-mobile') 
-    : document.querySelector('.search-container');
-  
-  if (!searchContainer) return;
-  
-  const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
-  let suggestionsContainer = document.getElementById(suggestionsId);
-  
-  if (!suggestionsContainer) {
-    suggestionsContainer = document.createElement('div');
-    suggestionsContainer.id = suggestionsId;
-    suggestionsContainer.className = 'search-suggestions' + (isMobile ? ' mobile-suggestions' : '');
-    searchContainer.appendChild(suggestionsContainer);
-  }
-  
-  suggestionsContainer.innerHTML = '';
-  
-  // Добавляем заголовок истории поиска
-  if (history.length > 0) {
-    const historyHeader = document.createElement('div');
-    historyHeader.className = 'search-suggestion-header';
-    historyHeader.innerHTML = `
-      <span>Історія пошуку</span>
-      <button class="clear-all-history-btn" onclick="event.stopPropagation(); clearSearchHistory()">
-        <i class="fas fa-trash"></i> Очистити все
-      </button>
-    `;
-    suggestionsContainer.appendChild(historyHeader);
-  }
-  
-  if (history.length === 0) {
-    const emptyHistory = document.createElement('div');
-    emptyHistory.className = 'search-suggestion';
-    emptyHistory.innerHTML = `
-      <i class="fas fa-history"></i>
-      <span class="suggestion-text">Історія пошуку порожня</span>
-    `;
-    suggestionsContainer.appendChild(emptyHistory);
-    suggestionsContainer.style.display = 'block';
-    return;
-  }
-  
-  history.slice(0, 5).forEach((term, index) => {
-    const div = document.createElement('div');
-    div.className = `search-suggestion ${index === 0 ? 'active' : ''}`;
-    div.innerHTML = `
-      <i class="fas fa-history"></i>
-      <span class="suggestion-text">${escapeHtml(term)}</span>
-      <span class="suggestion-type">Історія</span>
-      <button class="clear-history-btn" onclick="event.stopPropagation(); removeFromSearchHistory('${term}')">
-        <i class="fas fa-times"></i>
-      </button>
-    `;
-    
-    div.addEventListener('click', () => {
-      if (isMobile) {
-        document.getElementById('search-mobile').value = term;
-      } else {
-        document.getElementById('search').value = term;
-      }
-      currentFilters.search = term;
-      applyFilters();
-      hideSearchSuggestions(isMobile);
-    });
-    
-    suggestionsContainer.appendChild(div);
-  });
-  
-  suggestionsContainer.style.display = 'block';
-}
-
-// Функция показа подсказок
-function showSearchSuggestions(query, isMobile = false) {
-  if (!query || query.length < 1) {
-    showSearchHistorySuggestions(isMobile);
-    return;
-  }
-  
-  const suggestions = getEnhancedSearchSuggestions(query);
-  const searchContainer = isMobile 
-    ? document.querySelector('.search-container-mobile') 
-    : document.querySelector('.search-container');
-  
-  if (!searchContainer) return;
-  
-  const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
-  let suggestionsContainer = document.getElementById(suggestionsId);
-  
-  if (!suggestionsContainer) {
-    suggestionsContainer = document.createElement('div');
-    suggestionsContainer.id = suggestionsId;
-    suggestionsContainer.className = 'search-suggestions' + (isMobile ? ' mobile-suggestions' : '');
-    searchContainer.appendChild(suggestionsContainer);
-  }
-  
-  if (suggestions.length > 0) {
-    suggestionsContainer.innerHTML = '';
-    
-    suggestions.forEach((suggestion, index) => {
-      const div = document.createElement('div');
-      div.className = `search-suggestion ${suggestion.type === 'action' ? 'suggestion-action' : ''} ${index === 0 ? 'active' : ''}`;
-      
-      if (suggestion.type === 'action') {
-        div.innerHTML = `
-          ${suggestion.icon} 
-          <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
-        `;
-        
-        div.addEventListener('click', () => {
-          if (suggestion.action === 'search') {
-            const searchValue = suggestion.value.replace(/^Знайти "/, '').replace(/"$/, '');
-            if (isMobile) {
-              document.getElementById('search-mobile').value = searchValue;
-            } else {
-              document.getElementById('search').value = searchValue;
-            }
-            currentFilters.search = searchValue;
-            applyFilters();
-          }
-          hideSearchSuggestions(isMobile);
-        });
-      } else if (suggestion.type === 'history') {
-        div.innerHTML = `
-          ${suggestion.icon} 
-          <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
-          <span class="suggestion-type">Історія</span>
-          <button class="clear-history-btn" onclick="event.stopPropagation(); removeFromSearchHistory('${suggestion.value}')">
-            <i class="fas fa-times"></i>
-          </button>
-        `;
-        
-        div.addEventListener('click', () => {
-          if (isMobile) {
-            document.getElementById('search-mobile').value = suggestion.value;
-          } else {
-            document.getElementById('search').value = suggestion.value;
-          }
-          currentFilters.search = suggestion.value;
-          applyFilters();
-          hideSearchSuggestions(isMobile);
-        });
-      } else {
-        div.innerHTML = `
-          ${suggestion.icon} 
-          <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
-          <span class="suggestion-type">${suggestion.type}</span>
-        `;
-        
-        div.addEventListener('click', () => {
-          if (isMobile) {
-            document.getElementById('search-mobile').value = suggestion.value;
-          } else {
-            document.getElementById('search').value = suggestion.value;
-          }
-          currentFilters.search = suggestion.value;
-          applyFilters();
-          hideSearchSuggestions(isMobile);
-          
-          if (suggestion.productId) {
-            showProductDetail(suggestion.productId);
-          }
-        });
-      }
-      
-      div.addEventListener('mouseenter', () => {
-        suggestionsContainer.querySelectorAll('.search-suggestion').forEach(s => 
-          s.classList.remove('active')
-        );
-        div.classList.add('active');
-      });
-      
-      suggestionsContainer.appendChild(div);
-    });
-    
-    suggestionsContainer.style.display = 'block';
-  } else {
-    suggestionsContainer.style.display = 'none';
-  }
-}
-
-// Функция для скрытия подсказок
-function hideSearchSuggestions(isMobile = false) {
-  const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
-  const suggestionsContainer = document.getElementById(suggestionsId);
-  if (suggestionsContainer) {
-    suggestionsContainer.style.display = 'none';
-    suggestionsContainer.querySelectorAll('.search-suggestion').forEach(s => 
-      s.classList.remove('active')
-    );
-  }
-}
-
-// ===== АУДИО ПОИСК =====
-
-// Инициализация аудио поиска
-function initVoiceSearch() {
-  // Проверяем поддержку браузером
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    console.log('Браузер не поддерживает распознавание речи');
-    return;
-  }
-
-  // Создаем объект распознавания речи
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
-  
-  // Настройки распознавания
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.lang = 'uk-UA'; // Украинский язык
-
-  // Обработчики событий
-  recognition.onstart = function() {
-    isListening = true;
-    updateVoiceSearchUI(true);
-    showNotification('Слухаю... Говоріть now', 'info');
-  };
-
-  recognition.onresult = function(event) {
-    const transcript = event.results[0][0].transcript;
-    
-    // Вставляем результат в поле поиска
-    const searchInput = document.getElementById('search');
-    const searchMobileInput = document.getElementById('search-mobile');
-    
-    if (searchInput) {
-      searchInput.value = transcript;
-      searchInput.dispatchEvent(new Event('input'));
-    }
-    
-    if (searchMobileInput) {
-      searchMobileInput.value = transcript;
-      searchMobileInput.dispatchEvent(new Event('input'));
-    }
-    
-    // Сохраняем в историю поиска
-    saveToSearchHistory(transcript);
-    
-    showNotification(`Знайдено за запитом: "${transcript}"`, 'success');
-  };
-
-  recognition.onerror = function(event) {
-    isListening = false;
-    updateVoiceSearchUI(false);
-    
-    let errorMessage = 'Помилка розпізнавання мови';
-    switch (event.error) {
-      case 'no-speech':
-        errorMessage = 'Мова не розпізнана. Спробуйте ще раз.';
-        break;
-      case 'audio-capture':
-        errorMessage = 'Мікрофон не знайдено або відсутній дозвіл.';
-        break;
-      case 'not-allowed':
-        errorMessage = 'Дозвіл на використання мікрофона не надано.';
-        break;
-      default:
-        errorMessage = `Помилка: ${event.error}`;
-    }
-    
-    showNotification(errorMessage, 'error');
-  };
-
-  recognition.onend = function() {
-    isListening = false;
-    updateVoiceSearchUI(false);
-  };
-}
-
-// Функция для запуска/остановки аудио поиска
-function toggleVoiceSearch(isMobile = false) {
-  if (!recognition) {
-    showNotification('Аудіопошук не підтримується вашим браузером', 'error');
-    return;
-  }
-
-  if (isListening) {
-    recognition.stop();
-    isListening = false;
-    updateVoiceSearchUI(false);
-    showNotification('Аудіопошук зупинено', 'info');
-  } else {
-    try {
-      recognition.start();
-    } catch (error) {
-      console.error('Ошибка запуска распознавания:', error);
-      showNotification('Помилка запуску аудіопошуку', 'error');
-    }
-  }
-}
-
-// Обновление UI для аудио поиска
-function updateVoiceSearchUI(listening) {
-  const voiceButtons = document.querySelectorAll('.voice-search-btn');
-  
-  voiceButtons.forEach(btn => {
-    if (listening) {
-      btn.classList.add('listening');
-      btn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-      btn.title = 'Зупинити аудіопошук';
-    } else {
-      btn.classList.remove('listening');
-      btn.innerHTML = '<i class="fas fa-microphone"></i>';
-      btn.title = 'Голосовий пошук';
-    }
-  });
-}
-
-// Добавление кнопок аудио поиска в UI
-function addVoiceSearchButtons() {
-  // Для десктопной версии
-  const searchContainer = document.querySelector('.search-container');
-  if (searchContainer) {
-    const voiceBtn = document.createElement('button');
-    voiceBtn.type = 'button';
-    voiceBtn.className = 'voice-search-btn';
-    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-    voiceBtn.title = 'Голосовий пошук';
-    voiceBtn.onclick = () => toggleVoiceSearch(false);
-    
-    const searchInput = document.getElementById('search');
-    if (searchInput) {
-      searchInput.parentNode.insertBefore(voiceBtn, searchInput.nextSibling);
-    }
-  }
-
-  // Для мобильной версии
-  const searchMobileContainer = document.querySelector('.search-container-mobile');
-  if (searchMobileContainer) {
-    const voiceBtnMobile = document.createElement('button');
-    voiceBtnMobile.type = 'button';
-    voiceBtnMobile.className = 'voice-search-btn mobile';
-    voiceBtnMobile.innerHTML = '<i class="fas fa-microphone"></i>';
-    voiceBtnMobile.title = 'Голосовий пошук';
-    voiceBtnMobile.onclick = () => toggleVoiceSearch(true);
-    
-    const searchMobileInput = document.getElementById('search-mobile');
-    if (searchMobileInput) {
-      searchMobileInput.parentNode.insertBefore(voiceBtnMobile, searchMobileInput.nextSibling);
-    }
-  }
-}
-
-// ===== КОНЕЦ АУДИО ПОИСКА =====
-
-// Настройка обработчиков поиска
-function setupSearchHandler() {
-  const searchInput = document.getElementById('search');
-  const searchMobileInput = document.getElementById('search-mobile');
-  let lastSearchValue = '';
-  
-  function handleSearch(value, isMobile = false) {
-    if (value === lastSearchValue) return;
-    
-    clearTimeout(searchTimeout);
-    
-    searchTimeout = setTimeout(() => {
-      lastSearchValue = value;
-      currentFilters.search = value;
-      
-      if (value.length >= 1) {
-        showSearchSuggestions(value, isMobile);
-      } else {
-        showSearchHistorySuggestions(isMobile);
-      }
-      
-      applyFilters();
-    }, SEARCH_CONFIG.DEBOUNCE_DELAY);
-  }
-  
-  // Обработчик для десктопного поиска
-  if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      const currentValue = this.value.trim();
-      handleSearch(currentValue, false);
-      if (searchMobileInput) {
-        searchMobileInput.value = currentValue;
-      }
-    });
-    
-    // Обработчик фокуса - показываем историю
-    searchInput.addEventListener('focus', function() {
-      if (this.value === '') {
-        showSearchHistorySuggestions(false);
-      }
-    });
-    
-    searchInput.addEventListener('keydown', function(e) {
-      const suggestionsContainer = document.getElementById('search-suggestions');
-      if (!suggestionsContainer || suggestionsContainer.style.display === 'none') return;
-      
-      const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion');
-      let activeSuggestion = suggestionsContainer.querySelector('.search-suggestion.active');
-      
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          if (!activeSuggestion) {
-            suggestions[0]?.classList.add('active');
-          } else {
-            activeSuggestion.classList.remove('active');
-            const next = activeSuggestion.nextElementSibling || suggestions[0];
-            next.classList.add('active');
-          }
-          break;
-          
-        case 'ArrowUp':
-          e.preventDefault();
-          if (!activeSuggestion) {
-            suggestions[suggestions.length - 1]?.classList.add('active');
-          } else {
-            activeSuggestion.classList.remove('active');
-            const prev = activeSuggestion.previousElementSibling || suggestions[suggestions.length - 1];
-            prev.classList.add('active');
-          }
-          break;
-          
-        case 'Enter':
-          e.preventDefault();
-          if (activeSuggestion) {
-            activeSuggestion.click();
-          } else {
-            // Сохраняем поиск в историю при нажатии Enter
-            saveToSearchHistory(this.value);
-          }
-          break;
-          
-        case 'Escape':
-          hideSearchSuggestions(false);
-          this.value = '';
-          currentFilters.search = '';
-          applyFilters();
-          break;
-      }
-    });
-  }
-  
-  // Обработчик для мобильного поиска
-  if (searchMobileInput) {
-    searchMobileInput.addEventListener('input', function() {
-      const currentValue = this.value.trim();
-      handleSearch(currentValue, true);
-      if (searchInput) {
-        searchInput.value = currentValue;
-      }
-    });
-    
-    searchMobileInput.addEventListener('focus', function() {
-      if (this.value === '') {
-        showSearchHistorySuggestions(true);
-      }
-    });
-    
-    searchMobileInput.addEventListener('keydown', function(e) {
-      const suggestionsContainer = document.getElementById('search-suggestions-mobile');
-      if (!suggestionsContainer || suggestionsContainer.style.display === 'none') return;
-      
-      const suggestions = suggestionsContainer.querySelectorAll('.search-suggestion');
-      let activeSuggestion = suggestionsContainer.querySelector('.search-suggestion.active');
-      
-      switch (e.key) {
-        case 'Enter':
-          e.preventDefault();
-          if (activeSuggestion) {
-            activeSuggestion.click();
-          } else {
-            // Сохраняем поиск в историю при нажатии Enter
-            saveToSearchHistory(this.value);
-          }
-          break;
-          
-        case 'Escape':
-          hideSearchSuggestions(true);
-          this.value = '';
-          currentFilters.search = '';
-          applyFilters();
-          break;
-      }
-    });
-  }
-  
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.search-container') && !e.target.closest('.search-container-mobile')) {
-      hideSearchSuggestions(false);
-      hideSearchSuggestions(true);
-    }
-  });
-}
-
-// Добавление CSS для улучшенного поиска
-function addSearchStyles() {
-  const style = document.createElement('style');
-  style.textContent = `
-    .search-container {
-      position: relative;
-      width: 100%;
-    }
-    
-    .search-container-mobile {
-      position: relative;
-      width: 100%;
-      margin: 10px 0;
-    }
-    
-    .search-suggestions {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 1000;
-      max-height: 300px;
-      overflow-y: auto;
-      display: none;
-    }
-    
-    .mobile-suggestions {
-      position: fixed;
-      top: auto;
-      bottom: 0;
-      left: 10px;
-      right: 10px;
-      max-height: 50vh;
-      border-radius: 8px 8px 0 0;
-    }
-    
-    .search-suggestion {
-      padding: 12px 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-bottom: 1px solid #f0f0f0;
-      transition: background-color 0.2s;
-    }
-    
-    .search-suggestion:hover,
-    .search-suggestion.active {
-      background-color: #f8f9fa;
-    }
-    
-    .search-suggestion:last-child {
-      border-bottom: none;
-    }
-    
-    .suggestion-text {
-      flex: 1;
-      font-weight: 500;
-      font-size: 14px;
-    }
-    
-    .suggestion-type {
-      font-size: 0.75em;
-      color: #6c757d;
-      background: #e9ecef;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    
-    .suggestion-action {
-      background-color: #f8f9fa;
-      font-weight: bold;
-    }
-    
-    .suggestion-clear-history {
-      border-top: 1px solid #eee;
-      color: #666;
-      font-size: 0.9em;
-    }
-    
-    .clear-history-btn {
-      background: none;
-      border: none;
-      color: #999;
-      cursor: pointer;
-      padding: 2px 5px;
-      border-radius: 3px;
-      margin-left: auto;
-    }
-    
-    .clear-history-btn:hover {
-      background: #f0f0f0;
-      color: #e74c3c;
-    }
-    
-    .search-suggestion-header {
-      padding: 8px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f8f9fa;
-      border-bottom: 1px solid #e9ecef;
-      font-size: 0.8em;
-      font-weight: 600;
-      color: #6c757d;
-    }
-    
-    .clear-all-history-btn {
-      background: none;
-      border: none;
-      color: #e74c3c;
-      cursor: pointer;
-      font-size: 0.75em;
-      padding: 2px 6px;
-      border-radius: 3px;
-    }
-    
-    .clear-all-history-btn:hover {
-      background: #f8d7da;
-    }
-    
-    /* Стили для аудио поиска */
-    .voice-search-btn {
-      position: absolute;
-      right: 40px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #666;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-      z-index: 2;
-    }
-    
-    .voice-search-btn:hover {
-      background: #f0f0f0;
-      color: #333;
-    }
-    
-    .voice-search-btn.listening {
-      background: #e74c3c;
-      color: white;
-      animation: pulse 1.5s infinite;
-    }
-    
-    .voice-search-btn.mobile {
-      right: 40px;
-    }
-    
-    @keyframes pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
-      }
-      70% {
-        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
-      }
-    }
-    
-    /* Адаптация полей поиска под кнопки */
-    .search-container input,
-    .search-container-mobile input {
-      padding-right: 80px !important;
-    }
-    
-    @media (max-width: 768px) {
-      .search-container {
-        display: none;
-      }
-      
-      .voice-search-btn:not(.mobile) {
-        display: none;
-      }
-    }
-    
-    @media (min-width: 769px) {
-      .search-container-mobile {
-        display: none;
-      }
-      
-      .voice-search-btn.mobile {
-        display: none;
-      }
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-// Инициализация улучшенного поиска
-function initEnhancedSearch() {
-  addSearchStyles();
-  setupSearchHandler();
-  initVoiceSearch();
-  addVoiceSearchButtons();
-}
-
-// ===== КОНЕЦ УЛУЧШЕННОЙ СИСТЕМЫ ПОИСКА =====
-
+// Глобальные переменные
 let products = [];
 let cart = {};
 let favorites = {};
@@ -1164,324 +98,2214 @@ let currentFilters = {
   sort: 'default',
   search: '',
   availability: '',
-  source: ''
+  source: 'all'
 };
 
-// Глобальная переменная для рейтинга
-let currentRating = 0;
+// ===== УЛУЧШЕННАЯ СИСТЕМА ГОЛОСОВОГО ПОИСКА =====
 
-// Функція для налаштування лічильника переглядів
-function setupPageCounter() {
-  const params = new URLSearchParams({
-      style: 'flat-square',
-      label: 'Views',
-      color: 'blue',
-      logo: 'firebase'
-  });
+// Глобальная переменная для управления голосовым поиском
+let voiceSearch = {
+    recognition: null,
+    isListening: false,
+    isSupported: false
+};
 
-  // Беремо шлях поточної сторінки
-  const currentPath = window.location.pathname;
+// Инициализация голосового поиска
+function initVoiceSearch() {
+    // Проверяем поддержку в разных браузерах
+    const SpeechRecognition = window.SpeechRecognition || 
+                            window.webkitSpeechRecognition ||
+                            window.mozSpeechRecognition || 
+                            window.msSpeechRecognition;
 
-  // Робимо лічильник для zoo-market.web.app
-  const counterURL = `https://hits.sh/zoo-market.web.app${currentPath}.svg?${params.toString()}`;
-  const pageViewsElement = document.getElementById('page-views');
-  if (pageViewsElement) {
-      pageViewsElement.src = counterURL;
-  }
+    if (!SpeechRecognition) {
+        console.warn('Голосовой поиск не поддерживается в этом браузере');
+        voiceSearch.isSupported = false;
+        return;
+    }
+
+    try {
+        voiceSearch.recognition = new SpeechRecognition();
+        voiceSearch.isSupported = true;
+        
+        // Настройки распознавания
+        voiceSearch.recognition.continuous = false;
+        voiceSearch.recognition.interimResults = false;
+        voiceSearch.recognition.lang = 'uk-UA'; // Украинский язык
+        
+        // Обработчики событий
+        voiceSearch.recognition.onstart = function() {
+            voiceSearch.isListening = true;
+            updateVoiceSearchUI(true);
+            showNotification('Слухаю... Говоріть зараз', 'info');
+        };
+        
+        voiceSearch.recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            handleVoiceSearchResult(transcript);
+        };
+        
+        voiceSearch.recognition.onerror = function(event) {
+            console.error('Ошибка распознавания голоса:', event.error);
+            handleVoiceSearchError(event.error);
+        };
+        
+        voiceSearch.recognition.onend = function() {
+            voiceSearch.isListening = false;
+            updateVoiceSearchUI(false);
+        };
+        
+        console.log('🎤 Голосовой поиск инициализирован');
+        
+    } catch (error) {
+        console.error('Ошибка инициализации голосового поиска:', error);
+        voiceSearch.isSupported = false;
+    }
 }
 
-// Функція отправки email с данными заказа
-function sendOrderEmail(orderId, order) {
-  let itemsList = '';
-  for (const [productId, quantity] of Object.entries(order.items)) {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      itemsList += `
-        <tr>
-          <td>${product.title}</td>
-          <td>${quantity}</td>
-          <td>${formatPrice(product.price)} ₴</td>
-          <td>${formatPrice(product.price * quantity)} ₴</td>
-        </tr>
-      `;
+// Обработка результатов голосового поиска
+function handleVoiceSearchResult(transcript) {
+    if (!transcript || transcript.trim() === '') {
+        showNotification('Не розпізнано мовлення', 'warning');
+        return;
     }
-  }
-  
-  const templateParams = {
-    to_email: "korovinkonstantin0@gmail.com",
-    order_id: orderId,
-    customer_name: order.userName,
-    customer_email: order.userEmail,
-    customer_phone: order.userPhone,
-    delivery_service: order.delivery.service,
-    delivery_city: order.delivery.city,
-    delivery_warehouse: order.delivery.warehouse,
-    payment_method: order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою',
-    total_amount: formatPrice(order.total),
-    items: itemsList,
-    order_date: new Date().toLocaleString('uk-UA')
-  };
+    
+    const cleanTranscript = transcript.trim();
+    
+    // Определяем, какое поле поиска активно
+    const searchInput = document.getElementById('search');
+    const searchMobileInput = document.getElementById('search-mobile');
+    let activeInput = null;
+    
+    if (document.activeElement === searchMobileInput) {
+        activeInput = searchMobileInput;
+    } else if (document.activeElement === searchInput) {
+        activeInput = searchInput;
+    } else {
+        // Если ни одно поле не активно, используем основное
+        activeInput = searchInput || searchMobileInput;
+    }
+    
+    if (activeInput) {
+        activeInput.value = cleanTranscript;
+        currentFilters.search = cleanTranscript;
+        applyFilters();
+        
+        showNotification(`Пошук за запитом: "${cleanTranscript}"`);
+        
+        // Сохраняем в историю поиска
+        if (typeof saveToSearchHistory === 'function') {
+            saveToSearchHistory(cleanTranscript);
+        }
+    }
+}
 
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
-    .then(function(response) {
-      console.log('Email успешно отправлен!', response.status, response.text);
-    }, function(error) {
-      console.error('Ошибка отправки email:', error);
+// Обработка ошибок голосового поиска
+function handleVoiceSearchError(error) {
+    let errorMessage = 'Помилка розпізнавання голосу';
+    
+    switch (error) {
+        case 'no-speech':
+            errorMessage = 'Мовлення не розпізнано. Спробуйте ще раз.';
+            break;
+        case 'audio-capture':
+            errorMessage = 'Мікрофон не знайдено або заблоковано.';
+            break;
+        case 'not-allowed':
+            errorMessage = 'Доступ до мікрофона заблоковано. Дозвольте доступ у налаштуваннях браузера.';
+            break;
+        case 'network':
+            errorMessage = 'Помилка мережі. Перевірте підключення до інтернету.';
+            break;
+        case 'language-not-supported':
+            errorMessage = 'Українська мова не підтримується для розпізнавання.';
+            break;
+        default:
+            errorMessage = `Помилка: ${error}`;
+            break;
+    }
+    
+    showNotification(errorMessage, 'error');
+    updateVoiceSearchUI(false);
+}
+
+// Запуск голосового поиска
+function startVoiceSearch(isMobile = false) {
+    if (!voiceSearch.isSupported) {
+        showNotification('Голосовий пошук не підтримується вашим браузером', 'warning');
+        return;
+    }
+    
+    if (voiceSearch.isListening) {
+        stopVoiceSearch();
+        return;
+    }
+    
+    try {
+        voiceSearch.recognition.start();
+        
+        // Показываем индикатор на соответствующей кнопке
+        const voiceBtn = isMobile ? 
+            document.querySelector('.search-container-mobile .voice-search-btn') :
+            document.querySelector('.search-container .voice-search-btn');
+            
+        if (voiceBtn) {
+            voiceBtn.classList.add('listening');
+        }
+        
+    } catch (error) {
+        console.error('Ошибка запуска голосового поиска:', error);
+        showNotification('Помилка запуску голосового пошуку', 'error');
+    }
+}
+
+// Остановка голосового поиска
+function stopVoiceSearch() {
+    if (voiceSearch.recognition && voiceSearch.isListening) {
+        voiceSearch.recognition.stop();
+        voiceSearch.isListening = false;
+        updateVoiceSearchUI(false);
+    }
+}
+
+// Обновление UI голосового поиска
+function updateVoiceSearchUI(listening) {
+    const voiceButtons = document.querySelectorAll('.voice-search-btn');
+    
+    voiceButtons.forEach(btn => {
+        if (listening) {
+            btn.classList.add('listening');
+            btn.innerHTML = '⏹️';
+            btn.title = 'Зупинити запис';
+        } else {
+            btn.classList.remove('listening');
+            btn.innerHTML = '🎤';
+            btn.title = 'Голосовий пошук';
+        }
     });
 }
 
-// Функція для завантаження товарів з JSON файлу
-function loadProductsFromJson() {
-  isProductsLoading = true;
-  renderProducts(); // Показать скелетоны при начале загрузки
-  
-  const promises = PRODUCT_FILES.map(file => 
-      fetch(file)
-          .then(response => {
-              if (!response.ok) {
-                  console.warn(`Файл ${file} не найден, пропускаем`);
-                  return [];
-              }
-              return response.json();
-          })
-          .then(productsArray => {
-              return productsArray.map(product => ({
-                  ...product,
-                  source: file,
-                  isPopular: product.isPopular || false
-              }));
-          })
-          .catch(error => {
-              console.warn(`Ошибка загрузки файла ${file}:`, error);
-              return [];
-          })
-  );
-
-  return Promise.all(promises)
-      .then(results => {
-          let allProducts = [];
-          results.forEach(productsArray => {
-              if (Array.isArray(productsArray)) {
-                  allProducts = allProducts.concat(productsArray);
-              }
-          });
-          
-          if (allProducts.length === 0) {
-              const backup = localStorage.getItem('products_backup');
-              if (backup) {
-                  const backupProducts = JSON.parse(backup);
-                  isProductsLoading = false;
-                  return backupProducts;
-              }
-              throw new Error('Не вдалося завантажити товари з жодного файлу');
-          }
-          
-          isProductsLoading = false;
-          return shuffleArray(allProducts);
-      })
-      .catch(error => {
-          isProductsLoading = false;
-          throw error;
-      });
-}
-
-// Функция проверки доступности JSON файлов
-async function checkFilesAvailability() {
-    const availability = {};
+// Добавление кнопок голосового поиска в UI
+function addVoiceSearchButtons() {
+    const searchInput = document.getElementById('search');
+    const searchMobileInput = document.getElementById('search-mobile');
     
-    for (const file of PRODUCT_FILES) {
-        try {
-            const response = await fetch(file, { method: 'HEAD' });
-            availability[file] = response.ok;
-        } catch (error) {
-            availability[file] = false;
+    // Создаем стили для кнопок голосового поиска
+    const style = document.createElement('style');
+    style.textContent = `
+        .voice-search-btn {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            z-index: 10;
+            font-size: 16px;
         }
-    }
-    
-    document.querySelectorAll('.source-tab').forEach(tab => {
-        const onclickAttr = tab.getAttribute('onclick');
-        const match = onclickAttr.match(/switchSource\('([^']+)'/);
-        if (match && match[1] !== 'all') {
-            const file = match[1];
-            if (!availability[file]) {
-                tab.style.display = 'none';
+        
+        .voice-search-btn:hover {
+            background: #f0f0f0;
+            color: #007bff;
+        }
+        
+        .voice-search-btn.listening {
+            color: #e74c3c;
+            background: #ffeaea;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .search-container {
+            position: relative;
+        }
+        
+        .search-container-mobile {
+            position: relative;
+        }
+        
+        @keyframes pulse {
+            0% { 
+                transform: translateY(-50%) scale(1);
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+            }
+            50% { 
+                transform: translateY(-50%) scale(1.05);
+            }
+            100% { 
+                transform: translateY(-50%) scale(1);
+                box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
             }
         }
+        
+        /* Адаптация для мобильных устройств */
+        @media (max-width: 768px) {
+            .voice-search-btn {
+                right: 40px;
+                padding: 10px;
+                font-size: 18px;
+            }
+        }
+        
+        /* Состояние, когда голосовой поиск не поддерживается */
+        .voice-search-btn.not-supported {
+            display: none;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Добавляем кнопки к полям поиска
+    [searchInput, searchMobileInput].forEach((input, index) => {
+        if (!input) return;
+        
+        const isMobile = index === 1;
+        const container = input.parentElement;
+        
+        // Создаем кнопку голосового поиска
+        const voiceBtn = document.createElement('button');
+        voiceBtn.type = 'button';
+        voiceBtn.className = 'voice-search-btn';
+        voiceBtn.innerHTML = '🎤';
+        voiceBtn.title = 'Голосовий пошук';
+        voiceBtn.setAttribute('aria-label', 'Голосовий пошук');
+        
+        // Добавляем обработчик клика
+        voiceBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startVoiceSearch(isMobile);
+        });
+        
+        // Добавляем кнопку в контейнер
+        container.style.position = 'relative';
+        container.appendChild(voiceBtn);
+        
+        // Если голосовой поиск не поддерживается, скрываем кнопку
+        if (!voiceSearch.isSupported) {
+            voiceBtn.classList.add('not-supported');
+        }
     });
+}
+
+// ===== УЛУЧШЕННАЯ СИСТЕМА ПОИСКА В СТИЛЕ МАРКЕТПЛЕЙСОВ =====
+
+// Константы для оптимизации поиска
+const SEARCH_CONFIG = {
+  MAX_RESULTS: 1000,
+  DEBOUNCE_DELAY: 150,
+  MAX_HISTORY: 10,
+  MAX_CACHE_SIZE: 200,
+  MIN_QUERY_LENGTH: 2
+};
+
+// Розширений інтелектуальний словник для зоотоварів
+const ZOOMARKET_SEARCH_KNOWLEDGE = {
+  // Категорії та підкатегорії
+  categories: {
+    'корм': ['сухий', 'волого', 'консерви', 'натуральний', 'преміум', 'дієтичний'],
+    'аксесуар': ['для собак', 'для котів', 'для гризунів', 'для птахів'],
+    'іграшка': ['для цуценят', 'для кошенят', 'інтерактивна', 'муляж', 'місячна паличка'],
+    'клітка': ['для птахів', 'для гризунів', 'для кроликів', 'велика', 'маленька'],
+    'акваріум': ['прісноводний', 'морський', 'з підсвічуванням', 'з фільтром'],
+    'переноска': ['для котів', 'для собак', 'жорстка', 'мяка', 'пластикова']
+  },
+  
+  // Види тварин
+  animals: {
+    'собака': ['цуценя', 'собаки', 'пес', 'сука', 'собачий'],
+    'кіт': ['кошеня', 'коти', 'кішка', 'кішки', 'котячий'],
+    'гризун': ['хомяк', 'пацюк', 'миша', 'шиншила', 'морська свинка'],
+    'птах': ['папуга', 'канарка', 'горобець', 'канарейка', 'пташеня'],
+    'риба': ['золота рибка', 'гуппі', 'скалярія', 'мечоносець', 'неон']
+  },
+  
+  // Бренди
+  brands: {
+    'royal canin': ['роял канин', 'royal', 'canin'],
+    'purina': ['пуріна', 'pro plan', 'one'],
+    'hills': ['хіллс', 'science diet'],
+    'whiskas': ['віскас', 'віскас'],
+    'pedigree': ['педігрі', 'падігрі']
+  }
+};
+
+// Умный поисковый индекс
+class SmartSearchIndex {
+  constructor() {
+    this.products = [];
+    this.index = new Map();
+    this.suggestionsCache = new Map();
+  }
+
+  // Индексирование товаров с учетом multiple fields
+  indexProducts(products) {
+    this.products = products;
+    this.index.clear();
+    
+    products.forEach((product, idx) => {
+      const searchableText = this.getSearchableText(product);
+      const words = this.tokenizeText(searchableText);
+      
+      words.forEach(word => {
+        if (!this.index.has(word)) {
+          this.index.set(word, new Set());
+        }
+        this.index.get(word).add(idx);
+      });
+    });
+    
+    console.log(`🔍 Проиндексировано ${products.length} товаров, ${this.index.size} уникальных слов`);
+  }
+
+  // Получение поискового текста из всех полей товара
+  getSearchableText(product) {
+    const fields = [
+      product.title,
+      product.brand,
+      product.category,
+      product.description,
+      product.color,
+      product.size,
+      product.material,
+      product.style,
+      product.season,
+      product.sku,
+      product.article
+    ];
+    
+    return fields
+      .filter(Boolean)
+      .map(field => field.toLowerCase())
+      .join(' ')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // Нормализация Unicode
+  }
+
+  // Токенизация текста с извлечением ключевых слов
+  tokenizeText(text) {
+    return text
+      .toLowerCase()
+      .split(/[^\wа-яёїієґ]+/gi)
+      .filter(word => word.length > 2)
+      .flatMap(word => this.expandWordVariants(word))
+      .filter(Boolean);
+  }
+
+  // Расширение вариантов слова (синонимы, транслитерация)
+  expandWordVariants(word) {
+    const variants = new Set([word]);
+    
+    // Транслитерация
+    const translit = this.transliterate(word);
+    if (translit !== word) variants.add(translit);
+    
+    // Синонимы из расширенного словаря
+    if (searchSynonyms[word]) {
+      searchSynonyms[word].forEach(synonym => variants.add(synonym));
+    }
+    
+    // Обратный поиск синонимов
+    Object.entries(searchSynonyms).forEach(([key, synonyms]) => {
+      if (synonyms.includes(word)) variants.add(key);
+    });
+    
+    return Array.from(variants);
+  }
+
+  // Транслитерация кириллицы
+  transliterate(text) {
+    const cyrillic = 'абвгґдеёжзийклмнопрстуфхцчшщъыьэюя';
+    const latin = 'abvhgdeejziyklmnoprstufkchtschtsyyeyuya';
+    
+    return text.split('').map(char => {
+      const index = cyrillic.indexOf(char);
+      return index >= 0 ? latin[index] : char;
+    }).join('');
+  }
+
+  // Основной поиск с ранжированием
+  search(query, options = {}) {
+    if (!query || query.length < SEARCH_CONFIG.MIN_QUERY_LENGTH) {
+      return this.products;
+    }
+
+    const tokens = this.tokenizeText(query);
+    const results = this.findProducts(tokens);
+    const rankedResults = this.rankResults(results, tokens, query);
+    
+    return rankedResults.slice(0, options.limit || SEARCH_CONFIG.MAX_RESULTS);
+  }
+
+  // Поиск товаров по токенам
+  findProducts(tokens) {
+    const productScores = new Map();
+    
+    tokens.forEach(token => {
+      if (this.index.has(token)) {
+        this.index.get(token).forEach(productIdx => {
+          const currentScore = productScores.get(productIdx) || 0;
+          productScores.set(productIdx, currentScore + 1);
+        });
+      }
+    });
+    
+    return Array.from(productScores.entries())
+      .filter(([_, score]) => score > 0)
+      .map(([idx, score]) => ({
+        product: this.products[idx],
+        score,
+        index: idx
+      }));
+  }
+
+  // Ранжирование результатов
+  rankResults(results, tokens, originalQuery) {
+    return results
+      .map(result => {
+        const relevance = this.calculateRelevance(result.product, tokens, originalQuery);
+        return {
+          ...result,
+          relevance: result.score + relevance
+        };
+      })
+      .sort((a, b) => b.relevance - a.relevance)
+      .map(item => item.product);
+  }
+
+  // Расчет релевантности с учетом различных факторов
+  calculateRelevance(product, tokens, originalQuery) {
+    let score = 0;
+    const searchText = this.getSearchableText(product);
+    const originalQueryLower = originalQuery.toLowerCase();
+
+    // Приоритеты полей
+    if (product.title?.toLowerCase().includes(originalQueryLower)) score += 100;
+    if (product.brand?.toLowerCase().includes(originalQueryLower)) score += 80;
+    if (product.category?.toLowerCase().includes(originalQueryLower)) score += 60;
+    if (product.sku?.toLowerCase().includes(originalQueryLower)) score += 90;
+
+    // Точное совпадение в начале названия
+    if (product.title?.toLowerCase().startsWith(originalQueryLower)) score += 50;
+
+    // Популярность и актуальность
+    if (product.isPopular) score += 30;
+    if (product.isNew) score += 25;
+    if (product.inStock) score += 20;
+    if (product.discount) score += 15;
+
+    // Дополнительные бонусы
+    if (product.rating > 4) score += 10;
+    if (product.reviewCount > 10) score += 5;
+
+    return score;
+  }
+
+  // Получение умных подсказок
+  getSmartSuggestions(query, limit = 8) {
+    if (!query) return this.getPopularSearches(limit);
+    
+    const cacheKey = query.toLowerCase();
+    if (this.suggestionsCache.has(cacheKey)) {
+      return this.suggestionsCache.get(cacheKey);
+    }
+
+    const suggestions = new Set();
+    const tokens = this.tokenizeText(query);
+
+    // Поиск по брендам
+    this.products.forEach(product => {
+      if (product.brand?.toLowerCase().includes(query.toLowerCase())) {
+        suggestions.add({ type: 'brand', value: product.brand, count: 1 });
+      }
+    });
+
+    // Поиск по категориям
+    this.products.forEach(product => {
+      if (product.category?.toLowerCase().includes(query.toLowerCase())) {
+        suggestions.add({ type: 'category', value: product.category, count: 1 });
+      }
+    });
+
+    // Поиск по популярным запросам
+    tokens.forEach(token => {
+      if (this.index.has(token)) {
+        this.index.get(token).forEach(idx => {
+          const product = this.products[idx];
+          if (product.title?.toLowerCase().includes(query.toLowerCase())) {
+            suggestions.add({ 
+              type: 'product', 
+              value: product.title, 
+              productId: product.id,
+              count: 1 
+            });
+          }
+        });
+      }
+    });
+
+    const result = Array.from(suggestions)
+      .slice(0, limit)
+      .map(suggestion => ({
+        ...suggestion,
+        icon: this.getSuggestionIcon(suggestion.type)
+      }));
+
+    this.suggestionsCache.set(cacheKey, result);
+    return result;
+  }
+
+  getSuggestionIcon(type) {
+    const icons = {
+      brand: '🏷️',
+      category: '📁',
+      product: '👕',
+      history: '🕒',
+      popular: '🔥'
+    };
+    return icons[type] || '🔍';
+  }
+
+  getPopularSearches(limit = 5) {
+    // Здесь можно добавить логику получения популярных запросов
+    // Пока возвращаем заглушку
+    return [
+      { type: 'popular', value: 'джинсы', icon: '🔥' },
+      { type: 'popular', value: 'платья', icon: '🔥' },
+      { type: 'popular', value: 'куртки', icon: '🔥' },
+      { type: 'popular', value: 'обувь', icon: '🔥' },
+      { type: 'popular', value: 'сумки', icon: '🔥' }
+    ].slice(0, limit);
+  }
+}
+
+// Менеджер поиска с улучшенным UX
+class SearchManager {
+  constructor() {
+    this.searchIndex = new SmartSearchIndex();
+    this.isInitialized = false;
+    this.searchHistory = this.loadSearchHistory();
+  }
+
+  init(products) {
+    this.searchIndex.indexProducts(products);
+    this.isInitialized = true;
+    console.log('🎯 Поисковый менеджер инициализирован');
+  }
+
+  // Основной поиск
+  search(query, options = {}) {
+    if (!this.isInitialized) {
+      console.warn('Поисковый индекс не инициализирован');
+      return [];
+    }
+
+    this.saveToHistory(query);
+    return this.searchIndex.search(query, options);
+  }
+
+  // Получение подсказок
+  getSuggestions(query, limit = 8) {
+    if (!this.isInitialized) return [];
+    return this.searchIndex.getSmartSuggestions(query, limit);
+  }
+
+  // Работа с историей поиска
+  loadSearchHistory() {
+    try {
+      return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  saveSearchHistory() {
+    try {
+      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(this.searchHistory));
+    } catch (error) {
+      console.error('Ошибка сохранения истории поиска:', error);
+    }
+  }
+
+  saveToHistory(query) {
+    if (!query || query.length < SEARCH_CONFIG.MIN_QUERY_LENGTH) return;
+    
+    const cleanQuery = query.trim();
+    this.searchHistory = [
+      cleanQuery,
+      ...this.searchHistory.filter(item => item !== cleanQuery)
+    ].slice(0, SEARCH_CONFIG.MAX_HISTORY);
+    
+    this.saveSearchHistory();
+  }
+
+  clearHistory() {
+    this.searchHistory = [];
+    this.saveSearchHistory();
+  }
+
+  removeFromHistory(query) {
+    this.searchHistory = this.searchHistory.filter(item => item !== query);
+    this.saveSearchHistory();
+  }
+
+  getHistory() {
+    return this.searchHistory.slice(0, 5);
+  }
+}
+
+// Аналитика поиска для улучшения качества
+class SearchAnalytics {
+  constructor() {
+    this.searches = [];
+    this.clicks = [];
+  }
+
+  trackSearch(query, resultsCount) {
+    this.searches.push({
+      query,
+      resultsCount,
+      timestamp: Date.now(),
+      hasResults: resultsCount > 0
+    });
+    
+    // Сохраняем аналитику в localStorage
+    this.saveAnalytics();
+  }
+
+  trackClick(query, productId, position) {
+    this.clicks.push({
+      query,
+      productId,
+      position,
+      timestamp: Date.now()
+    });
+    
+    this.saveAnalytics();
+  }
+
+  saveAnalytics() {
+    try {
+      const analytics = {
+        searches: this.searches.slice(-100), // Последние 100 записей
+        clicks: this.clicks.slice(-100),
+        updatedAt: Date.now()
+      };
+      
+      localStorage.setItem('search_analytics', JSON.stringify(analytics));
+    } catch (error) {
+      console.error('Ошибка сохранения аналитики:', error);
+    }
+  }
+
+  getPopularQueries(limit = 10) {
+    const queryCounts = {};
+    
+    this.searches.forEach(search => {
+      queryCounts[search.query] = (queryCounts[search.query] || 0) + 1;
+    });
+    
+    return Object.entries(queryCounts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, limit)
+      .map(([query]) => query);
+  }
+}
+
+// Глобальные экземпляры менеджера поиска и аналитики
+const searchManager = new SearchManager();
+const searchAnalytics = new SearchAnalytics();
+
+// Розширений словник помилок та транслітерації для зоотоварів
+const searchTypos = {
+  // Російські помилки
+  'корм': ['кор', 'корма', 'корму', 'корми'],
+  'собака': ['сабака', 'собка', 'сабаки'],
+  'кот': ['коть', 'кота', 'коты', 'коти'],
+  'аквариум': ['акваиум', 'акварим', 'акваруим'],
+  'игрушка': ['игрушка', 'игрушки', 'игрушк'],
+  'поводок': ['поводк', 'паводок', 'повадок'],
+  'ошейник': ['ошейник', 'ошейники', 'ошейнк'],
+  'миска': ['миска', 'миски', 'миску'],
+  'лежак': ['лежк', 'лежаки', 'лежак'],
+  'витамины': ['витамини', 'витамин', 'витамины'],
+
+  // Українські помилки
+  'корм': ['кор', 'корма', 'корму', 'корми'],
+  'собака': ['сабака', 'собка', 'сабаки'],
+  'кіт': ['кіть', 'кота', 'коти', 'кішки'],
+  'акваріум': ['акваіум', 'акварім', 'акваруім'],
+  'іграшка': ['іграшка', 'іграшки', 'іграшк'],
+  'повідець': ['повідк', 'паводець', 'повадець'],
+  'ошийник': ['ошийник', 'ошийники', 'ошийнк'],
+  'миска': ['миска', 'миски', 'миску'],
+  'лежак': ['лежк', 'лежаки', 'лежак'],
+  'вітаміни': ['вітаміни', 'вітамін', 'вітаміни'],
+
+  // Транслітерація
+  'korm': ['корм', 'корма'],
+  'sobaka': ['собака', 'собаки'],
+  'kot': ['кот', 'коти'],
+  'aquarium': ['акваріум', 'аквариум'],
+  'toy': ['іграшка', 'игрушка'],
+  'leash': ['поводок', 'повідець'],
+  'collar': ['ошейник', 'ошийник'],
+  'bowl': ['миска', 'миска'],
+  'bed': ['лежак', 'лежак'],
+  'vitamins': ['вітаміни', 'витамины']
+};
+
+// Словник синонімів для зоотоварів
+const searchSynonyms = {
+  // Російські синоніми
+  'корм': ['еда', 'питание', 'провиант'],
+  'собака': ['пес', 'пёс', 'собачка', 'псина'],
+  'кот': ['кошка', 'котёнок', 'котик', 'котэ'],
+  'аквариум': ['аква', 'банка', 'рыбник'],
+  'игрушка': ['мячик', 'погрызушка', 'развлечение'],
+  'поводок': ['повод', 'привязь', 'риштек', 'цепь'],
+  'ошейник': ['ошейник', 'шейник', 'воротник'],
+  'миска': ['чашка', 'посуда', 'ёмкость'],
+  'лежак': ['кровать', 'подстилка', 'место', 'коврик'],
+  'витамины': ['добавки', 'премикс', 'биодобавки'],
+  'наполнитель': ['туалет', 'насыпка', 'абсорбент'],
+  'переноска': ['контейнер', 'сумка', 'клетка'],
+  'шампунь': ['моющее', 'средство', 'гель'],
+  'расческа': ['щетка', 'гребень', 'пуходерка'],
+  
+  // Українські синоніми
+  'корм': ['їжа', 'харч', 'провіант'],
+  'собака': ['пес', 'собачка', 'псина'],
+  'кіт': ['кішка', 'кошеня', 'котик'],
+  'акваріум': ['аква', 'банка', 'рибник'],
+  'іграшка': ['мячик', 'погризушка', 'розвага'],
+  'повідець': ['повід', 'привяз', 'риштек', 'ланцюг'],
+  'ошийник': ['шийник', 'комірець'],
+  'миска': ['чашка', 'посуд', 'ємність'],
+  'лежак': ['ліжко', 'постіль', 'місце', 'килимок'],
+  'вітаміни': ['добавки', 'премікс', 'біодобавки'],
+  'наповнювач': ['туалет', 'насипка', 'абсорбент'],
+  'переноска': ['контейнер', 'сумка', 'клітка'],
+  'шампунь': ['миючий', 'засіб', 'гель'],
+  'розчіска': ['щітка', 'гребінець', 'пуходерка']
+};
+
+// Функция исправления опечаток
+function fixCommonTypos(query) {
+    if (!query || query.length < 2) return query;
+    
+    let fixedQuery = query.toLowerCase();
+    
+    // Исправляем опечатки
+    Object.entries(searchTypos).forEach(([correct, mistakes]) => {
+        mistakes.forEach(mistake => {
+            if (fixedQuery.includes(mistake)) {
+                fixedQuery = fixedQuery.replace(mistake, correct);
+            }
+        });
+    });
+    
+    return fixedQuery;
+}
+
+// Улучшенная нормализация текста
+function normalizeSearchTerm(term) {
+    if (!term) return '';
+    
+    let normalized = term.toLowerCase()
+      .replace(/[єё]/g, 'е')
+      .replace(/[ї]/g, 'и') 
+      .replace(/[і]/g, 'и')
+      .replace(/[ґ]/g, 'г')
+      .replace(/[ы]/g, 'и')
+      .replace(/[э]/g, 'е')
+      .replace(/[ъь]/g, '')
+      .replace(/[^а-яa-z0-9\-\s']/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // Исправляем опечатки
+    normalized = fixCommonTypos(normalized);
+    
+    return normalized;
+}
+
+// Расширение поискового запроса синонимами
+function expandSearchQuery(query) {
+    const words = query.split(' ');
+    const expanded = [...words];
+    
+    words.forEach(word => {
+        const normalizedWord = normalizeSearchTerm(word);
+        
+        if (searchSynonyms[normalizedWord]) {
+            expanded.push(...searchSynonyms[normalizedWord]);
+        }
+    });
+    
+    return [...new Set(expanded)].join(' ');
+}
+
+// Функция расчета релевантности
+function calculateRelevance(product, searchTerms) {
+    if (!product || !searchTerms) return 0;
+    
+    let score = 0;
+    const searchText = searchTerms.toLowerCase();
+    
+    // Приоритеты совпадений
+    if (product.title && product.title.toLowerCase().includes(searchText)) {
+        score += 100;
+        // Бонус за точное совпадение в начале названия
+        if (product.title.toLowerCase().startsWith(searchText)) score += 50;
+    }
+    
+    if (product.brand && product.brand.toLowerCase().includes(searchText)) score += 50;
+    if (product.category && product.category.toLowerCase().includes(searchText)) score += 30;
+    if (product.description && product.description.toLowerCase().includes(searchText)) score += 10;
+    
+    // Поиск по артикулам и кодам
+    if (product.sku && product.sku.toLowerCase().includes(searchText)) score += 80;
+    if (product.article && product.article.toLowerCase().includes(searchText)) score += 80;
+    if (product.vendorCode && product.vendorCode.toLowerCase().includes(searchText)) score += 80;
+    
+    // Поиск по размеру и цвету
+    if (product.size && product.size.toLowerCase().includes(searchText)) score += 40;
+    if (product.color && product.color.toLowerCase().includes(searchText)) score += 40;
+    
+    // Бонусы за дополнительные параметры
+    if (product.isPopular) score += 20;
+    if (product.isNew) score += 15;
+    if (product.inStock) score += 10;
+    if (product.discount) score += 5;
+    
+    return score;
+}
+
+// ===== ОБНОВЛЕННАЯ ФУНКЦИЯ ПРЕДОБРАБОТКИ ТОВАРОВ =====
+function preprocessProducts(productsArray) {
+    console.log("🔧 Предобработка товаров с характеристиками...");
+    
+    const processedProducts = productsArray.map((product, index) => {
+        if (!product || typeof product !== 'object') return product;
+        
+        // Создаем уникальный ID если его нет
+        if (!product.id) {
+            product.id = `product_${Date.now()}_${index}`;
+        }
+        
+        // Обрабатываем характеристики
+        const specifications = processSpecifications(product);
+        
+        const searchFields = [
+            product.title || '',
+            product.brand || '',
+            product.category || '',
+            product.description || '',
+            specifications.searchText || '',
+            product.model || '',
+            product.sku || '',
+            product.article || '',
+            product.vendorCode || '',
+            product.size ? `размер:${product.size} size:${product.size} розмір:${product.size}` : '',
+            product.color ? `цвет:${product.color} color:${product.color} колір:${product.color}` : '',
+            product.material ? `материал:${product.material} material:${product.material} матеріал:${product.material}` : '',
+            product.season ? `сезон:${product.season} season:${product.season}` : '',
+            product.style ? `стиль:${product.style} style:${product.style}` : ''
+        ];
+        
+        const normalizedFields = searchFields.map(field => 
+            normalizeSearchTerm(String(field || ''))
+        );
+        
+        const searchIndex = normalizedFields.join(' ').toLowerCase();
+        
+        return {
+            ...product,
+            searchIndex,
+            title: product.title || 'Без назви',
+            brand: product.brand || '',
+            category: product.category || '',
+            description: product.description || '',
+            price: Number(product.price) || 0,
+            oldPrice: Number(product.oldPrice) || null,
+            image: product.image || '',
+            inStock: product.inStock !== undefined ? product.inStock : true,
+            discount: product.discount || 0,
+            isNew: product.isNew || false,
+            isPopular: product.isPopular || false,
+            
+            // Характеристики
+            specifications: specifications.formatted,
+            size: product.size || '',
+            color: product.color || '',
+            material: product.material || '',
+            season: product.season || '',
+            style: product.style || '',
+            
+            // Технические характеристики
+            model: product.model || '',
+            sku: product.sku || '',
+            article: product.article || '',
+            vendorCode: product.vendorCode || '',
+            composition: product.composition || '',
+            care: product.care || '',
+            country: product.country || '',
+            weight: product.weight || '',
+            dimensions: product.dimensions || '',
+            
+            // Для улучшенного поиска
+            rating: product.rating || 0,
+            reviewCount: product.reviewCount || 0
+        };
+    });
+    
+    console.log(`✅ Обработано ${processedProducts.length} товаров с характеристиками`);
+    return processedProducts;
+}
+
+// ===== ФУНКЦИЯ ОБРАБОТКИ ХАРАКТЕРИСТИК =====
+function processSpecifications(product) {
+    let specifications = {};
+    let searchText = '';
+    
+    // Если характеристики представлены как объект
+    if (typeof product.specifications === 'object' && product.specifications !== null) {
+        specifications = { ...product.specifications };
+    }
+    // Если характеристики представлены как строка
+    else if (typeof product.specifications === 'string') {
+        try {
+            // Пробуем распарсить JSON
+            specifications = JSON.parse(product.specifications);
+        } catch (e) {
+            // Если не JSON, разбиваем по строкам
+            const lines = product.specifications.split('\n').filter(line => line.trim());
+            lines.forEach(line => {
+                const [key, ...valueParts] = line.split(':');
+                if (key && valueParts.length > 0) {
+                    const value = valueParts.join(':').trim();
+                    specifications[key.trim()] = value;
+                }
+            });
+        }
+    }
+    
+    // Добавляем основные характеристики если их нет
+    const mainSpecs = {
+        'Розмір': product.size,
+        'Колір': product.color,
+        'Матеріал': product.material || product.composition,
+        'Сезон': product.season,
+        'Стиль': product.style,
+        'Бренд': product.brand,
+        'Країна виробник': product.country,
+        'Склад': product.composition,
+        'Догляд': product.care,
+        'Вага': product.weight,
+        'Розміри упаковки': product.dimensions
+    };
+    
+    Object.entries(mainSpecs).forEach(([key, value]) => {
+        if (value && !specifications[key]) {
+            specifications[key] = value;
+        }
+    });
+    
+    // Удаляем пустые характеристики
+    Object.keys(specifications).forEach(key => {
+        if (!specifications[key]) {
+            delete specifications[key];
+        } else {
+            searchText += ` ${key} ${specifications[key]}`;
+        }
+    });
+    
+    // Форматируем для отображения
+    const formattedSpecs = Object.entries(specifications)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join('\n');
+    
+    return {
+        formatted: formattedSpecs,
+        object: specifications,
+        searchText: searchText
+    };
 }
 
 // Улучшенная предобработка товаров
-function preprocessProducts(productsArray) {
-  console.log("🔧 Предобработка товаров для умного поиска...");
-  
-  const processedProducts = productsArray.map((product, index) => {
-    if (!product || typeof product !== 'object') return product;
+function preprocessProductsOld(productsArray) {
+    console.log("🔧 Предобработка товаров для умного поиска...");
     
-    // Создаем уникальный ID если его нет
-    if (!product.id) {
-      product.id = `product_${Date.now()}_${index}`;
-    }
+    const processedProducts = productsArray.map((product, index) => {
+        if (!product || typeof product !== 'object') return product;
+        
+        // Создаем уникальный ID если его нет
+        if (!product.id) {
+            product.id = `product_${Date.now()}_${index}`;
+        }
+        
+        const searchFields = [
+            product.title || '',
+            product.brand || '',
+            product.category || '',
+            product.description || '',
+            product.specifications || '',
+            product.model || '',
+            product.sku || '',
+            product.article || '',
+            product.vendorCode || '',
+            product.size ? `размер:${product.size} size:${product.size} розмір:${product.size}` : '',
+            product.color ? `цвет:${product.color} color:${product.color} колір:${product.color}` : ''
+        ];
+        
+        const normalizedFields = searchFields.map(field => 
+            normalizeSearchTerm(String(field || ''))
+        );
+        
+        const searchIndex = normalizedFields.join(' ').toLowerCase();
+        
+        return {
+            ...product,
+            searchIndex,
+            title: product.title || 'Без назви',
+            brand: product.brand || '',
+            category: product.category || '',
+            description: product.description || '',
+            price: Number(product.price) || 0,
+            image: product.image || '',
+            inStock: product.inStock !== undefined ? product.inStock : true,
+            specifications: product.specifications || '',
+            model: product.model || '',
+            sku: product.sku || '',
+            article: product.article || '',
+            vendorCode: product.vendorCode || '',
+            size: product.size || '',
+            color: product.color || '',
+            // Добавляем новые поля для улучшенного поиска
+            material: product.material || '',
+            style: product.style || '',
+            season: product.season || '',
+            rating: product.rating || 0,
+            reviewCount: product.reviewCount || 0
+        };
+    });
     
-    const searchFields = [
-      product.title || '',
-      product.title || '',
-      product.title || '', // высокая важность (повторяем 3 раза)
-      product.brand || '',
-      product.brand || '', // средняя важность (повторяем 2 раза)
-      product.category || '',
-      product.description || '',
-      product.specifications || '',
-      product.model || '',
-      product.sku || ''
-    ];
-    
-    const normalizedFields = searchFields.map(field => 
-      normalizeSearchTerm(String(field || ''))
-    );
-    
-    const searchIndex = normalizedFields.join(' ').toLowerCase();
-    
-    return {
-      ...product,
-      searchIndex,
-      title: product.title || 'Без назви',
-      brand: product.brand || '',
-      category: product.category || '',
-      description: product.description || '',
-      price: Number(product.price) || 0,
-      image: product.image || '',
-      inStock: product.inStock !== undefined ? product.inStock : true,
-      specifications: product.specifications || '',
-      model: product.model || '',
-      sku: product.sku || ''
-    };
-  });
-  
-  console.log(`✅ Обработано ${processedProducts.length} товаров`);
-  return processedProducts;
+    console.log(`✅ Обработано ${processedProducts.length} товаров`);
+    return processedProducts;
 }
 
-// Ініціалізація додатка
-function initApp() {
-  emailjs.init(EMAILJS_USER_ID);
-  
-  initEnhancedSearch();
-
-  // Показать скелетоны сразу при инициализации
-  showEnhancedLoadingSkeleton();
-  
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      currentUser = user;
-      document.getElementById('login-btn').style.display = 'none';
-      document.getElementById('user-menu').style.display = 'inline-block';
-      document.getElementById('admin-access-btn').style.display = 'inline-block';
-      document.getElementById('user-name').textContent = user.displayName || user.email;
-      
-      checkAdminStatus(user.uid);
-    } else {
-      currentUser = null;
-      document.getElementById('login-btn').style.display = 'inline-block';
-      document.getElementById('user-menu').style.display = 'none';
-      document.getElementById('admin-access-btn').style.display = 'none';
-      document.getElementById("admin-panel").style.display = "none";
-      adminMode = false;
-    }
-  });
-  
-  // Загрузка товаров
-  loadProducts().catch(error => {
-    console.error("Помилка завантаження з Firestore, пробуємо завантажити з JSON:", error);
+// Управление историей поиска
+function saveToSearchHistory(query) {
+    if (!query || query.trim().length < 2) return;
     
-    loadProductsFromJson()
-      .then(jsonProducts => {
-        products = preprocessProducts(jsonProducts);
-        window.currentProducts = products;
-        updateCartCount();
-        renderProducts();
-        renderFeaturedProducts();
-        renderCategories();
-        renderBrands();
-        showNotification(`Товари завантажено з ${PRODUCT_FILES.length} файлів`);
-        
-        localStorage.setItem('products_backup', JSON.stringify(products));
-      })
-      .catch(jsonError => {
-        console.error("Помилка завантаження з JSON:", jsonError);
-        showNotification("Не вдалося завантажити товари", "error");
-        isProductsLoading = false;
-        renderProducts(); // Показать сообщение об ошибке
-      });
-  }).finally(() => {
-      checkFilesAvailability();
-  });
-  
-  const cartData = localStorage.getItem(CART_STORAGE_KEY);
-  if(cartData) cart = JSON.parse(cartData);
-  
-  const favoritesData = localStorage.getItem(FAVORITES_STORAGE_KEY);
-  if(favoritesData) favorites = JSON.parse(favoritesData);
-  
-  const viewMode = localStorage.getItem(VIEW_MODE_KEY) || 'grid';
-  setViewMode(viewMode);
-  
-  updateCartCount();
-  
-  const feedUrl = localStorage.getItem(FEED_URL_KEY);
-  if (feedUrl) {
-    document.getElementById("feed-url").value = feedUrl;
-  }
-  
-  document.getElementById("year").innerText = new Date().getFullYear();
-  
-  document.getElementById('category').addEventListener('change', function() {
-    currentFilters.category = this.value;
-    applyFilters();
-  });
-  
-  document.getElementById('brand').addEventListener('change', function() {
-    currentFilters.brand = this.value;
-    applyFilters();
-  });
-  
-  document.getElementById('sort').addEventListener('change', function() {
-    currentFilters.sort = this.value;
-    applyFilters();
-  });
-  
-  document.getElementById('availability').addEventListener('change', function() {
-    currentFilters.availability = this.value;
-    applyFilters();
-  });
-  
-  document.getElementById('price-min').addEventListener('change', function() {
-    currentFilters.minPrice = this.value ? parseInt(this.value) : null;
-    applyFilters();
-  });
-  
-  document.getElementById('price-max').addEventListener('change', function() {
-    currentFilters.maxPrice = this.value ? parseInt(this.value) : null;
-    applyFilters();
-  });
-  
-  window.addEventListener('resize', adjustHeaderTitle);
-  adjustHeaderTitle();
-  
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.search-container') && !e.target.closest('.search-container-mobile')) {
-      hideSearchSuggestions(false);
-      hideSearchSuggestions(true);
-    }
-  });
+    const cleanQuery = query.trim();
+    const history = JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]');
+    const newHistory = [cleanQuery, ...history.filter(item => item !== cleanQuery)].slice(0, MAX_SEARCH_HISTORY);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(newHistory));
+}
 
-  // Синхронизация фильтров при загрузке
-  setTimeout(() => {
-    document.getElementById('mobile-price-min').value = document.getElementById('price-min').value;
-    document.getElementById('mobile-price-max').value = document.getElementById('price-max').value;
-    document.getElementById('mobile-brand').value = document.getElementById('brand').value;
-    document.getElementById('mobile-availability').value = document.getElementById('availability').value;
-    document.getElementById('mobile-sort').value = document.getElementById('sort').value;
-  }, 1000);
+function getSearchHistory() {
+    return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]');
+}
+
+function clearSearchHistory() {
+    localStorage.removeItem(SEARCH_HISTORY_KEY);
+}
+
+function removeFromSearchHistory(term) {
+    const history = getSearchHistory();
+    const newHistory = history.filter(item => item !== term);
+    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(newHistory));
+    
+    // Обновляем отображение
+    const searchInput = document.getElementById('search');
+    if (searchInput && searchInput.value === '') {
+        showSearchHistorySuggestions(false);
+    }
+    
+    const searchMobileInput = document.getElementById('search-mobile');
+    if (searchMobileInput && searchMobileInput.value === '') {
+        showSearchHistorySuggestions(true);
+    }
+}
+
+// Индикатор загрузки поиска
+function showSearchLoading(isMobile = false) {
+    const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
+    const suggestionsContainer = document.getElementById(suggestionsId);
+    
+    if (suggestionsContainer) {
+        suggestionsContainer.innerHTML = '<div class="search-loading">🔍 Поиск...</div>';
+        suggestionsContainer.style.display = 'block';
+    }
+    
+    searchLoading = true;
+}
+
+function hideSearchLoading(isMobile = false) {
+    searchLoading = false;
+}
+
+// Аналитика поиска
+function trackSearchMetrics(query, resultsCount, selectedSuggestion = null) {
+    searchAnalytics.trackSearch(query, resultsCount);
+}
+
+// Безопасный поиск с обработкой ошибок
+function safeSearch(query) {
+    try {
+        if (!query || typeof query !== 'string') {
+            return [];
+        }
+        
+        // Сохраняем в историю
+        saveToSearchHistory(query);
+        
+        // Трекинг метрик
+        const results = searchProductsEnhanced(query);
+        trackSearchMetrics(query, results.length);
+        
+        return results;
+    } catch (error) {
+        console.error('Search error:', error);
+        
+        // Fallback: простой поиск по заголовку
+        return products.filter(p => 
+            p.title?.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 50);
+    }
+}
+
+// Улучшенные подсказки с историей и действиями
+function getEnhancedSearchSuggestions(query) {
+    try {
+        if (!query || query.length < 1) {
+            // Показываем историю поиска когда поле пустое
+            return getSearchHistorySuggestions();
+        }
+        
+        const normalizedQuery = normalizeSearchTerm(query);
+        
+        if (searchCache.has(normalizedQuery)) {
+            return searchCache.get(normalizedQuery);
+        }
+        
+        const suggestions = [];
+        const seen = new Set();
+        
+        const maxProductsToCheck = Math.min(products.length, 200);
+        
+        for (let i = 0; i < maxProductsToCheck; i++) {
+            const product = products[i];
+            if (!product || typeof product !== 'object') continue;
+            
+            const fieldsToCheck = [
+                { field: 'title', type: 'Назва', icon: '👕', relevance: 10 },
+                { field: 'brand', type: 'Бренд', icon: '🏷️', relevance: 8 },
+                { field: 'category', type: 'Категорія', icon: '📂', relevance: 6 },
+                { field: 'sku', type: 'Артикул', icon: '#️⃣', relevance: 9 },
+                { field: 'size', type: 'Розмір', icon: '📏', relevance: 5 },
+                { field: 'color', type: 'Колір', icon: '🎨', relevance: 5 }
+            ];
+            
+            for (const { field, type, icon, relevance } of fieldsToCheck) {
+                if (product[field] && !seen.has(product[field])) {
+                    const fieldValue = String(product[field]);
+                    const normalizedField = normalizeSearchTerm(fieldValue);
+                    
+                    if (normalizedField.includes(normalizedQuery)) {
+                        seen.add(product[field]);
+                        suggestions.push({ 
+                            value: product[field], 
+                            type: type, 
+                            icon: icon,
+                            productId: product.id,
+                            relevance: relevance + (field === 'title' ? 5 : 0)
+                        });
+                    }
+                }
+            }
+            
+            if (suggestions.length >= 8) break;
+        }
+        
+        // Добавляем быстрые действия если мало результатов
+        if (suggestions.length < 3) {
+            suggestions.push({
+                type: 'action',
+                icon: '🔍',
+                value: `Знайти "${query}"`,
+                action: 'search',
+                relevance: 100
+            });
+        }
+        
+        suggestions.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
+        
+        // Очистка кэша
+        cleanupSearchCache();
+        
+        const finalSuggestions = suggestions.slice(0, 6);
+        searchCache.set(normalizedQuery, finalSuggestions);
+        return finalSuggestions;
+    } catch (error) {
+        console.error("Ошибка в поиске подсказок:", error);
+        return getFallbackSuggestions(query);
+    }
+}
+
+// Подсказки из истории поиска
+function getSearchHistorySuggestions() {
+    const history = getSearchHistory();
+    return history.slice(0, 5).map(term => ({
+        type: 'history',
+        icon: '🕒',
+        value: term,
+        action: 'search',
+        relevance: 100
+    }));
+}
+
+// Резервные подсказки при ошибке
+function getFallbackSuggestions(query) {
+    return [
+        {
+            type: 'action',
+            icon: '🔍',
+            value: `Знайти "${query}"`,
+            action: 'search',
+            relevance: 100
+        }
+    ];
+}
+
+// Очистка кэша поиска
+function cleanupSearchCache() {
+    if (searchCache.size > MAX_CACHE_SIZE) {
+        const keys = Array.from(searchCache.keys()).slice(0, 20);
+        keys.forEach(key => searchCache.delete(key));
+    }
+}
+
+// Удаление дубликатов в результатах
+function removeDuplicateResults(results) {
+    const seen = new Set();
+    const uniqueResults = [];
+    
+    for (const product of results) {
+        const key = `${product.title}_${product.brand}_${product.price}_${product.sku || ''}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            uniqueResults.push(product);
+        }
+    }
+    
+    return uniqueResults;
+}
+
+// Приоритет по наличию и локации
+function enhanceWithLocation(results) {
+    return results.sort((a, b) => {
+        // Приоритет товаров в наличии
+        if (a.inStock && !b.inStock) return -1;
+        if (!a.inStock && b.inStock) return 1;
+        
+        return 0;
+    });
+}
+
+// Улучшенная функция поиска с ранжированием
+function searchProductsEnhanced(searchTerm) {
+    if (!searchTerm || searchTerm.trim().length < 1) {
+        return products;
+    }
+    
+    const normalizedSearch = normalizeSearchTerm(searchTerm);
+    const searchWords = normalizedSearch.split(/\s+/).filter(word => word.length >= 1);
+    
+    if (searchWords.length === 0) {
+        return products;
+    }
+    
+    const expandedQuery = expandSearchQuery(normalizedSearch);
+    const expandedWords = expandedQuery.split(/\s+/).filter(word => word.length >= 1);
+    
+    let results = products.filter(product => {
+        if (!product.searchIndex) return false;
+        
+        // Ищем товары, которые содержат ВСЕ слова из запроса
+        const allWordsMatch = searchWords.every(word => 
+            product.searchIndex.includes(word)
+        );
+        
+        // Если не нашли по всем словам, ищем по расширенному запросу
+        if (!allWordsMatch && expandedWords.length > searchWords.length) {
+            return expandedWords.some(word => 
+                product.searchIndex.includes(word)
+            );
+        }
+        
+        return allWordsMatch;
+    });
+    
+    // Ограничение количества результатов
+    if (results.length > MAX_SEARCH_RESULTS) {
+        results = results.slice(0, MAX_SEARCH_RESULTS);
+    }
+    
+    // Ранжирование по релевантности
+    results.forEach(product => {
+        product.relevanceScore = calculateRelevance(product, searchTerm);
+    });
+    
+    // Сортировка по релевантности
+    results.sort((a, b) => {
+        if (b.relevanceScore !== a.relevanceScore) {
+            return b.relevanceScore - a.relevanceScore;
+        }
+        
+        // Вторичная сортировка
+        if (a.isPopular && !b.isPopular) return -1;
+        if (!a.isPopular && b.isPopular) return 1;
+        if (a.isNew && !b.isNew) return -1;
+        if (!a.isNew && b.isNew) return 1;
+        
+        return 0;
+    });
+    
+    // Удаление дубликатов
+    results = removeDuplicateResults(results);
+    
+    return results;
+}
+
+// Основная функция поиска
+function searchProducts(searchTerm) {
+    return safeSearch(searchTerm);
+}
+
+// Функция для экранирования HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Показать историю поиска
+function showSearchHistorySuggestions(isMobile = false) {
+    const history = getSearchHistory();
+    if (history.length === 0) return;
+    
+    const searchContainer = isMobile 
+        ? document.querySelector('.search-container-mobile') 
+        : document.querySelector('.search-container');
+    
+    if (!searchContainer) return;
+    
+    const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
+    let suggestionsContainer = document.getElementById(suggestionsId);
+    
+    if (!suggestionsContainer) {
+        suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = suggestionsId;
+        suggestionsContainer.className = 'search-suggestions' + (isMobile ? ' mobile-suggestions' : '');
+        searchContainer.appendChild(suggestionsContainer);
+    }
+    
+    suggestionsContainer.innerHTML = '';
+    
+    history.slice(0, 5).forEach((term, index) => {
+        const div = document.createElement('div');
+        div.className = `search-suggestion ${index === 0 ? 'active' : ''}`;
+        div.innerHTML = `
+            <i class="fas fa-history"></i>
+            <span class="suggestion-text">${escapeHtml(term)}</span>
+            <span class="suggestion-type">Історія</span>
+            <button class="clear-history-btn" onclick="event.stopPropagation(); removeFromSearchHistory('${term}')">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        div.addEventListener('click', () => {
+            if (isMobile) {
+                document.getElementById('search-mobile').value = term;
+            } else {
+                document.getElementById('search').value = term;
+            }
+            currentFilters.search = term;
+            applyFilters();
+            hideSearchSuggestions(isMobile);
+        });
+        
+        suggestionsContainer.appendChild(div);
+    });
+    
+    // Кнопка очистки истории
+    const clearHistoryDiv = document.createElement('div');
+    clearHistoryDiv.className = 'search-suggestion suggestion-clear-history';
+    clearHistoryDiv.innerHTML = `
+        <i class="fas fa-trash"></i>
+        <span class="suggestion-text">Очистити історію пошуку</span>
+    `;
+    clearHistoryDiv.addEventListener('click', (e) => {
+        e.stopPropagation();
+        clearSearchHistory();
+        hideSearchSuggestions(isMobile);
+        showNotification('Історію пошуку очищено');
+    });
+    suggestionsContainer.appendChild(clearHistoryDiv);
+    
+    suggestionsContainer.style.display = 'block';
+}
+
+// Функция показа подсказок
+function showSearchSuggestions(query, isMobile = false) {
+    if (!query || query.length < 1) {
+        showSearchHistorySuggestions(isMobile);
+        return;
+    }
+    
+    const suggestions = getEnhancedSearchSuggestions(query);
+    const searchContainer = isMobile 
+        ? document.querySelector('.search-container-mobile') 
+        : document.querySelector('.search-container');
+    
+    if (!searchContainer) return;
+    
+    const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
+    let suggestionsContainer = document.getElementById(suggestionsId);
+    
+    if (!suggestionsContainer) {
+        suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = suggestionsId;
+        suggestionsContainer.className = 'search-suggestions' + (isMobile ? ' mobile-suggestions' : '');
+        searchContainer.appendChild(suggestionsContainer);
+    }
+    
+    if (suggestions.length > 0) {
+        suggestionsContainer.innerHTML = '';
+        
+        suggestions.forEach((suggestion, index) => {
+            const div = document.createElement('div');
+            div.className = `search-suggestion ${suggestion.type === 'action' ? 'suggestion-action' : ''} ${index === 0 ? 'active' : ''}`;
+            
+            if (suggestion.type === 'action') {
+                div.innerHTML = `
+                    ${suggestion.icon} 
+                    <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
+                `;
+                
+                div.addEventListener('click', () => {
+                    if (suggestion.action === 'search') {
+                        const searchValue = suggestion.value.replace(/^Знайти "/, '').replace(/"$/, '');
+                        if (isMobile) {
+                            document.getElementById('search-mobile').value = searchValue;
+                        } else {
+                            document.getElementById('search').value = searchValue;
+                        }
+                        currentFilters.search = searchValue;
+                        applyFilters();
+                    }
+                    hideSearchSuggestions(isMobile);
+                });
+            } else if (suggestion.type === 'history') {
+                div.innerHTML = `
+                    ${suggestion.icon} 
+                    <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
+                    <span class="suggestion-type">Історія</span>
+                    <button class="clear-history-btn" onclick="event.stopPropagation(); removeFromSearchHistory('${suggestion.value}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                div.addEventListener('click', () => {
+                    if (isMobile) {
+                        document.getElementById('search-mobile').value = suggestion.value;
+                    } else {
+                        document.getElementById('search').value = suggestion.value;
+                    }
+                    currentFilters.search = suggestion.value;
+                    applyFilters();
+                    hideSearchSuggestions(isMobile);
+                });
+            } else {
+                div.innerHTML = `
+                    ${suggestion.icon} 
+                    <span class="suggestion-text">${escapeHtml(suggestion.value)}</span>
+                    <span class="suggestion-type">${suggestion.type}</span>
+                `;
+                
+                div.addEventListener('click', () => {
+                    if (isMobile) {
+                        document.getElementById('search-mobile').value = suggestion.value;
+                    } else {
+                        document.getElementById('search').value = suggestion.value;
+                    }
+                    currentFilters.search = suggestion.value;
+                    applyFilters();
+                    hideSearchSuggestions(isMobile);
+                    
+                    if (suggestion.productId) {
+                        showProductDetail(suggestion.productId);
+                    }
+                });
+            }
+            
+            suggestionsContainer.appendChild(div);
+        });
+        
+        suggestionsContainer.style.display = 'block';
+    } else {
+        suggestionsContainer.style.display = 'none';
+    }
+}
+
+// Функция для скрытия подсказок
+function hideSearchSuggestions(isMobile = false) {
+    const suggestionsId = isMobile ? 'search-suggestions-mobile' : 'search-suggestions';
+    const suggestionsContainer = document.getElementById(suggestionsId);
+    if (suggestionsContainer) {
+        suggestionsContainer.style.display = 'none';
+    }
+}
+
+// Настройка обработчиков поиска
+function setupSearchHandler() {
+    const searchInput = document.getElementById('search');
+    const searchMobileInput = document.getElementById('search-mobile');
+    let lastSearchValue = '';
+    
+    // Добавляем кнопки голосового поиска
+    addVoiceSearchButtons();
+    
+    function handleSearch(value, isMobile = false) {
+        if (value === lastSearchValue) return;
+        
+        clearTimeout(searchTimeout);
+        
+        // Показываем индикатор загрузки
+        if (value.length >= 1) {
+            showSearchLoading(isMobile);
+        }
+        
+        searchTimeout = setTimeout(() => {
+            lastSearchValue = value;
+            currentFilters.search = value;
+            
+            if (value.length >= 1) {
+                showSearchSuggestions(value, isMobile);
+            } else {
+                showSearchHistorySuggestions(isMobile);
+            }
+            
+            applyFilters();
+            hideSearchLoading(isMobile);
+        }, ENHANCED_DEBOUNCE_DELAY);
+    }
+    
+    // Обработчик для десктопного поиска
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const currentValue = this.value.trim();
+            handleSearch(currentValue, false);
+            if (searchMobileInput) {
+                searchMobileInput.value = currentValue;
+            }
+        });
+        
+        // Обработчик фокуса - показываем историю
+        searchInput.addEventListener('focus', function() {
+            if (this.value === '') {
+                showSearchHistorySuggestions(false);
+            }
+        });
+    }
+    
+    // Обработчик для мобильного поиска
+    if (searchMobileInput) {
+        searchMobileInput.addEventListener('input', function() {
+            const currentValue = this.value.trim();
+            handleSearch(currentValue, true);
+            if (searchInput) {
+                searchInput.value = currentValue;
+            }
+        });
+        
+        searchMobileInput.addEventListener('focus', function() {
+            if (this.value === '') {
+                showSearchHistorySuggestions(true);
+            }
+        });
+    }
+    
+    // Закрытие подсказок при клике вне области поиска
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container') && 
+            !e.target.closest('.search-container-mobile') &&
+            !e.target.closest('.voice-search-btn')) {
+            hideSearchSuggestions(false);
+            hideSearchSuggestions(true);
+        }
+    });
+    
+    // Остановка голосового поиска при клике вне области
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.voice-search-btn') && voiceSearch.isListening) {
+            stopVoiceSearch();
+        }
+    });
+}
+
+// Добавление CSS для поиска
+function addSearchStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .search-container-mobile {
+            position: relative;
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .mobile-suggestions {
+            position: fixed;
+            top: auto;
+            bottom: 0;
+            left: 10px;
+            right: 10px;
+            max-height: 50vh;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .search-suggestion {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        
+        .search-suggestion:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .suggestion-text {
+            flex: 1;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .suggestion-type {
+            font-size: 0.75em;
+            color: #6c757d;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .voice-search-btn {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            z-index: 10;
+            font-size: 16px;
+        }
+        
+        .voice-search-btn:hover {
+            background: #f0f0f0;
+            color: #007bff;
+        }
+        
+        .voice-search-btn.listening {
+            color: #e74c3c;
+            background: #ffeaea;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { 
+                transform: translateY(-50%) scale(1);
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+            }
+            50% { 
+                transform: translateY(-50%) scale(1.05);
+            }
+            100% { 
+                transform: translateY(-50%) scale(1);
+                box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+            }
+        }
+        
+        .search-loading {
+            padding: 10px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .suggestion-action {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .suggestion-clear-history {
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .clear-history-btn {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: auto;
+        }
+        
+        .clear-history-btn:hover {
+            background: #f0f0f0;
+            color: #e74c3c;
+        }
+        
+        @media (max-width: 768px) {
+            .search-container {
+                display: none;
+            }
+            
+            .voice-search-btn {
+                right: 40px;
+                padding: 10px;
+                font-size: 18px;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .search-container-mobile {
+                display: none;
+            }
+        }
+        
+        .voice-search-btn.not-supported {
+            display: none;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Инициализация улучшенного поиска при загрузке приложения
+function initEnhancedSearch() {
+    addSearchStyles();
+    setupSearchHandler();
+    
+    // Гарантируем предобработку товаров
+    if (products.length > 0 && !searchIndexReady) {
+        products = preprocessProducts(products);
+    }
+}
+
+// Интеграция с существующей системой
+function initEnhancedSearchSystem() {
+    // Заменяем старые функции поиска на новые
+    window.searchProductsEnhanced = function(searchTerm) {
+        return searchManager.search(searchTerm);
+    };
+
+    window.getEnhancedSearchSuggestions = function(query) {
+        return searchManager.getSuggestions(query);
+    };
+
+    window.saveToSearchHistory = function(query) {
+        searchManager.saveToHistory(query);
+    };
+
+    window.getSearchHistory = function() {
+        return searchManager.getHistory();
+    };
+
+    window.clearSearchHistory = function() {
+        searchManager.clearHistory();
+    };
+
+    window.removeFromSearchHistory = function(query) {
+        searchManager.removeFromHistory(query);
+    };
+
+    console.log('🔍 Улучшенная поисковая система активирована');
+}
+
+// ===== ФУНКЦИЯ СЧЕТЧИКА ПРОСМОТРОВ =====
+
+function setupPageCounter() {
+    const params = new URLSearchParams({
+        style: 'flat-square',
+        label: 'Views',
+        color: 'blue',
+        logo: 'firebase'
+    });
+
+    // Используем текущий домен сайта
+    const currentHost = window.location.hostname;
+    const currentPath = window.location.pathname;
+
+    // Создаем URL для счетчика просмотров
+    const counterURL = `https://hits.sh/${currentHost}${currentPath}.svg?${params.toString()}`;
+    
+    const pageViewsElement = document.getElementById('page-views');
+    const pageViewsContainer = document.getElementById('page-views-container');
+    
+    if (pageViewsElement && pageViewsContainer) {
+        pageViewsElement.src = counterURL;
+        // Показываем контейнер (убираем display: none)
+        pageViewsContainer.style.display = 'block';
+    }
+}
+
+// ===== ОБНОВЛЕННАЯ ФУНКЦИЯ ЗАГРУЗКИ ТОВАРОВ С ХАРАКТЕРИСТИКАМИ =====
+function loadProductsFromJson() {
+    isProductsLoading = true;
+    renderProducts();
+    
+    const promises = PRODUCT_FILES.map(file => 
+        fetch(file)
+            .then(response => {
+                if (!response.ok) {
+                    console.warn(`Файл ${file} не знайдений, пропускаємо`);
+                    return [];
+                }
+                return response.json();
+            })
+            .then(productsArray => {
+                return productsArray.map(product => ({
+                    ...product,
+                    source: file,
+                    isPopular: product.isPopular || false,
+                    // Обеспечиваем наличие всех полей характеристик
+                    specifications: product.specifications || product.details || product.characteristics || '',
+                    size: product.size || '',
+                    color: product.color || '',
+                    material: product.material || '',
+                    brand: product.brand || '',
+                    category: product.category || '',
+                    season: product.season || '',
+                    style: product.style || '',
+                    // Добавляем поля для улучшенного поиска
+                    model: product.model || '',
+                    sku: product.sku || product.article || '',
+                    article: product.article || product.sku || '',
+                    vendorCode: product.vendorCode || '',
+                    // Дополнительные технические характеристики
+                    composition: product.composition || product.material || '',
+                    care: product.care || '',
+                    country: product.country || '',
+                    weight: product.weight || '',
+                    dimensions: product.dimensions || ''
+                }));
+            })
+            .catch(error => {
+                console.warn(`Помилка завантаження файлу ${file}:`, error);
+                return [];
+            })
+    );
+
+    return Promise.all(promises)
+        .then(results => {
+            let allProducts = [];
+            results.forEach(productsArray => {
+                if (Array.isArray(productsArray)) {
+                    allProducts = allProducts.concat(productsArray);
+                }
+            });
+            
+            if (allProducts.length === 0) {
+                const backup = localStorage.getItem('products_backup');
+                if (backup) {
+                    const backupProducts = JSON.parse(backup);
+                    isProductsLoading = false;
+                    return backupProducts;
+                }
+                throw new Error('Не вдалося завантажити товари з жодного файлу');
+            }
+            
+            isProductsLoading = false;
+            return shuffleArray(allProducts);
+        })
+        .catch(error => {
+            isProductsLoading = false;
+            throw error;
+        });
+}
+
+// ===== ОСНОВНЫЕ ФУНКЦИИ FASHION STORE =====
+
+// Инициализация приложения
+function initApp() {
+    emailjs.init(EMAILJS_USER_ID);
+    
+    // Инициализация голосового поиска ДО добавления кнопок
+    initVoiceSearch();
+    
+    // Добавляем стили для комментариев
+    addCommentStyles();
+    
+    // Добавляем стили для характеристик
+    addSpecificationsStyles();
+    
+    // Предобработка товаров после загрузки
+    if (products.length > 0) {
+        products = preprocessProducts(products);
+    }
+    
+    // Инициализируем улучшенный поиск
+    initEnhancedSearch();
+    
+    // Инициализируем поисковый менеджер
+    if (products.length > 0) {
+        searchManager.init(products);
+    }
+
+    showEnhancedLoadingSkeleton();
+    
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('login-btn').style.display = 'none';
+            document.getElementById('user-menu').style.display = 'inline-block';
+            document.getElementById('admin-access-btn').style.display = 'inline-block';
+            document.getElementById('user-name').textContent = user.displayName || user.email;
+            
+            checkAdminStatus(user.uid);
+        } else {
+            currentUser = null;
+            document.getElementById('login-btn').style.display = 'inline-block';
+            document.getElementById('user-menu').style.display = 'none';
+            document.getElementById('admin-access-btn').style.display = 'none';
+            document.getElementById("admin-panel").style.display = "none";
+            adminMode = false;
+            
+            // Скрываем счетчик просмотров при выходе
+            const pageViewsContainer = document.getElementById('page-views-container');
+            if (pageViewsContainer) {
+                pageViewsContainer.style.display = 'none';
+            }
+        }
+    });
+    
+    // Инициализация выпадающего меню пользователя
+    const userMenu = document.getElementById('user-menu');
+    if (userMenu) {
+        const userBtn = userMenu.querySelector('.user-btn');
+        const userDropdown = userMenu.querySelector('.user-dropdown');
+
+        userBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userDropdown.classList.toggle('show');
+        });
+
+        // Закрытие выпадающего меню при клике вне его
+        document.addEventListener('click', function() {
+            userDropdown.classList.remove('show');
+        });
+    }
+    
+    // Загрузка товаров
+    loadProducts().catch(error => {
+        console.error("Помилка завантаження з Firestore, пробуємо завантажити з JSON:", error);
+        
+        loadProductsFromJson()
+            .then(jsonProducts => {
+                products = preprocessProducts(jsonProducts);
+                window.currentProducts = products;
+                updateCartCount();
+                renderProducts();
+                renderFeaturedProducts();
+                renderCategories();
+                renderBrands();
+                showNotification(`Товари завантажено з ${PRODUCT_FILES.length} файлів`);
+                
+                localStorage.setItem('products_backup', JSON.stringify(products));
+                
+                // Инициализируем поисковый менеджер после загрузки товаров
+                searchManager.init(products);
+            })
+            .catch(jsonError => {
+                console.error("Помилка завантаження з JSON:", jsonError);
+                showNotification("Не вдалося завантажити товари", "error");
+                isProductsLoading = false;
+                renderProducts();
+            });
+    });
+    
+    const cartData = localStorage.getItem(CART_STORAGE_KEY);
+    if(cartData) cart = JSON.parse(cartData);
+    
+    const favoritesData = localStorage.getItem(FAVORITES_STORAGE_KEY);
+    if(favoritesData) favorites = JSON.parse(favoritesData);
+    
+    const viewMode = localStorage.getItem(VIEW_MODE_KEY) || 'grid';
+    setViewMode(viewMode);
+    
+    updateCartCount();
+    
+    const feedUrl = localStorage.getItem(FEED_URL_KEY);
+    if (feedUrl) {
+        document.getElementById("feed-url").value = feedUrl;
+    }
+    
+    document.getElementById("year").innerText = new Date().getFullYear();
+    
+    // Настройка обработчиков фильтров
+    document.getElementById('category').addEventListener('change', function() {
+        currentFilters.category = this.value;
+        applyFilters();
+    });
+    
+    document.getElementById('brand').addEventListener('change', function() {
+        currentFilters.brand = this.value;
+        applyFilters();
+    });
+    
+    document.getElementById('sort').addEventListener('change', function() {
+        currentFilters.sort = this.value;
+        applyFilters();
+    });
+    
+    document.getElementById('availability').addEventListener('change', function() {
+        currentFilters.availability = this.value;
+        applyFilters();
+    });
+    
+    document.getElementById('price-min').addEventListener('change', function() {
+        currentFilters.minPrice = this.value ? parseInt(this.value) : null;
+        applyFilters();
+    });
+    
+    document.getElementById('price-max').addEventListener('change', function() {
+        currentFilters.maxPrice = this.value ? parseInt(this.value) : null;
+        applyFilters();
+    });
+
+    // Инициализируем менеджер заказов
+    orderManager.init();
+    
+    // Добавляем стили для заказов
+    addOrdersStyles();
+    
+    // Инициализация счетчика просмотров
+    setupPageCounter();
+}
+
+// Функція відкриття профілю користувача
+function openProfile() {
+    if (!currentUser) {
+        showNotification("Спочатку увійдіть в систему", "warning");
+        openAuthModal();
+        return;
+    }
+    
+    const modalContent = document.getElementById("modal-content");
+    modalContent.innerHTML = `
+        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <h3>Профіль користувача</h3>
+        <div class="profile-info">
+            <div class="form-group">
+                <label>Ім'я</label>
+                <input type="text" id="profile-name" value="${currentUser.displayName || ''}">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="profile-email" value="${currentUser.email || ''}" disabled>
+            </div>
+            <div class="form-group">
+                <label>Новий пароль</label>
+                <input type="password" id="profile-password" placeholder="Залиште порожнім, якщо не хочете змінювати">
+            </div>
+            <button class="btn btn-detail" onclick="updateProfile()">Зберегти зміни</button>
+        </div>
+    `;
+    
+    openModal();
+}
+
+// Функція оновлення профілю користувача
+function updateProfile() {
+    const name = document.getElementById('profile-name').value;
+    const password = document.getElementById('profile-password').value;
+    
+    const updates = {};
+    if (name !== currentUser.displayName) {
+        updates.displayName = name;
+    }
+    
+    const promises = [];
+    
+    // Оновлюємо профіль
+    if (Object.keys(updates).length > 0) {
+        promises.push(currentUser.updateProfile(updates));
+    }
+    
+    // Якщо вказано новий пароль, оновлюємо його
+    if (password) {
+        promises.push(currentUser.updatePassword(password));
+    }
+    
+    if (promises.length === 0) {
+        showNotification("Немає змін для оновлення", "info");
+        return;
+    }
+    
+    Promise.all(promises)
+        .then(() => {
+            showNotification("Профіль успішно оновлено");
+            closeModal();
+            // Оновлюємо ім'я користувача в інтерфейсі
+            document.getElementById('user-name').textContent = name || currentUser.email;
+        })
+        .catch((error) => {
+            console.error("Помилка оновлення профілю: ", error);
+            let errorMessage = "Помилка оновлення профілю";
+            
+            if (error.code === 'auth/requires-recent-login') {
+                errorMessage = "Для зміни пароля необхідно повторно увійти в систему";
+            } else if (error.code === 'auth/weak-password') {
+                errorMessage = "Пароль занадто слабкий. Використовуйте мінімум 6 символів";
+            }
+            
+            showNotification(errorMessage, "error");
+        });
 }
 
 // Функции для мобильных фильтров
@@ -1489,7 +2313,6 @@ function toggleMobileFilters() {
     const mobileFilters = document.getElementById('mobile-filters');
     mobileFilters.classList.toggle('active');
     
-    // Блокируем прокрутку body при открытых фильтрах
     if (mobileFilters.classList.contains('active')) {
         document.body.style.overflow = 'hidden';
     } else {
@@ -1504,588 +2327,431 @@ function closeMobileFilters() {
 }
 
 function applyMobileFilters() {
-    // Синхронизируем значения из мобильных фильтров в основные
     document.getElementById('price-min').value = document.getElementById('mobile-price-min').value;
     document.getElementById('price-max').value = document.getElementById('mobile-price-max').value;
     document.getElementById('brand').value = document.getElementById('mobile-brand').value;
     document.getElementById('availability').value = document.getElementById('mobile-availability').value;
     document.getElementById('sort').value = document.getElementById('mobile-sort').value;
     
-    // Применяем фильтры
     applyFilters();
-    
-    // Закрываем мобильные фильтры
     closeMobileFilters();
 }
 
 function resetMobileFilters() {
-    // Сбрасываем мобильные фильтры
     document.getElementById('mobile-price-min').value = '';
     document.getElementById('mobile-price-max').value = '';
     document.getElementById('mobile-brand').value = '';
     document.getElementById('mobile-availability').value = '';
     document.getElementById('mobile-sort').value = 'default';
     
-    // Сбрасываем основные фильтры
     resetFilters();
-    
-    // Закрываем мобильные фильтры
     closeMobileFilters();
 }
 
+// Загрузка товаров
 function loadProducts() {
-  isProductsLoading = true;
-  renderProducts(); // Показать скелетоны сразу при начале загрузки
-  
-  const cachedProducts = localStorage.getItem('products_cache');
-  const cacheTime = localStorage.getItem('products_cache_time');
-  
-  if (cachedProducts && cacheTime && Date.now() - cacheTime < 300000) {
-    products = preprocessProducts(JSON.parse(cachedProducts));
-    products = shuffleArray(products);
-    window.currentProducts = products;
-    isProductsLoading = false;
-    updateCartCount();
+    isProductsLoading = true;
     renderProducts();
-    renderFeaturedProducts();
-    renderCategories();
-    renderBrands();
-    return Promise.resolve();
-  }
-  
-  return db.collection("products")
-        .get()
-        .then((querySnapshot) => {
-            if (querySnapshot.empty) {
-        const data = localStorage.getItem('products_backup');
-        if (data) {
-          products = preprocessProducts(JSON.parse(data));
-          products = shuffleArray(products);
-          window.currentProducts = products;
-          isProductsLoading = false;
-          updateCartCount();
-          renderProducts();
-          renderFeaturedProducts();
-          renderCategories();
-          renderBrands();
-          return Promise.resolve();
-        } else {
-          return loadProductsFromJson()
-            .then(jsonProducts => {
-              products = preprocessProducts(jsonProducts);
-              products = shuffleArray(products);
-              window.currentProducts = products;
-              isProductsLoading = false;
-              updateCartCount();
-              renderProducts();
-              renderFeaturedProducts();
-              renderCategories();
-              renderBrands();
-              showNotification("Товари завантажено з локального файлу");
-              
-              localStorage.setItem('products_backup', JSON.stringify(products));
-            });
-        }
-      } else {
-                products = [];
-                querySnapshot.forEach((doc) => {
-                    products.push({ id: doc.id, ...doc.data() });
-                });
-                
-                products = preprocessProducts(products);
-                products = shuffleArray(products);
-                window.currentProducts = products;
-        
-        localStorage.setItem('products_cache', JSON.stringify(products));
-        localStorage.setItem('products_cache_time', Date.now());
-        
+    
+    const cachedProducts = localStorage.getItem('products_cache');
+    const cacheTime = localStorage.getItem('products_cache_time');
+    
+    if (cachedProducts && cacheTime && Date.now() - cacheTime < 300000) {
+        products = preprocessProducts(JSON.parse(cachedProducts));
+        products = shuffleArray(products);
+        window.currentProducts = products;
         isProductsLoading = false;
         updateCartCount();
         renderProducts();
         renderFeaturedProducts();
         renderCategories();
         renderBrands();
+        
+        // Инициализируем поисковый менеджер
+        searchManager.init(products);
+        
         return Promise.resolve();
-      }
-    })
-    .catch((error) => {
-      console.error("", error);
-      showNotification("");
-      isProductsLoading = false;
-      
-      const data = localStorage.getItem('products_backup');
-      if (data) {
-        products = preprocessProducts(JSON.parse(data));
-        products = shuffleArray(products);
-        window.currentProducts = products;
-        updateCartCount();
-        renderProducts();
-        renderFeaturedProducts();
-        renderCategories();
-        renderBrands();
-        return Promise.resolve();
-      } else {
-        return Promise.reject(error);
-      }
-    });
+    }
+    
+    return db.collection("products")
+            .get()
+            .then((querySnapshot) => {
+                if (querySnapshot.empty) {
+            const data = localStorage.getItem('products_backup');
+            if (data) {
+                products = preprocessProducts(JSON.parse(data));
+                products = shuffleArray(products);
+                window.currentProducts = products;
+                isProductsLoading = false;
+                updateCartCount();
+                renderProducts();
+                renderFeaturedProducts();
+                renderCategories();
+                renderBrands();
+                
+                // Инициализируем поисковый менеджер
+                searchManager.init(products);
+                
+                return Promise.resolve();
+            } else {
+                return loadProductsFromJson()
+                    .then(jsonProducts => {
+                        products = preprocessProducts(jsonProducts);
+                        products = shuffleArray(products);
+                        window.currentProducts = products;
+                        isProductsLoading = false;
+                        updateCartCount();
+                        renderProducts();
+                        renderFeaturedProducts();
+                        renderCategories();
+                        renderBrands();
+                        showNotification("Товари завантажено з локального файлу");
+                        
+                        localStorage.setItem('products_backup', JSON.stringify(products));
+                        
+                        // Инициализируем поисковый менеджер
+                        searchManager.init(products);
+                    });
+            }
+            } else {
+                        products = [];
+                        querySnapshot.forEach((doc) => {
+                            products.push({ id: doc.id, ...doc.data() });
+                        });
+                        
+                        products = preprocessProducts(products);
+                        products = shuffleArray(products);
+                        window.currentProducts = products;
+            
+            localStorage.setItem('products_cache', JSON.stringify(products));
+            localStorage.setItem('products_cache_time', Date.now());
+            
+            isProductsLoading = false;
+            updateCartCount();
+            renderProducts();
+            renderFeaturedProducts();
+            renderCategories();
+            renderBrands();
+            
+            // Инициализируем поисковый менеджер
+            searchManager.init(products);
+            
+            return Promise.resolve();
+            }
+        })
+        .catch((error) => {
+            console.error("", error);
+            showNotification("");
+            isProductsLoading = false;
+            
+            const data = localStorage.getItem('products_backup');
+            if (data) {
+                products = preprocessProducts(JSON.parse(data));
+                products = shuffleArray(products);
+                window.currentProducts = products;
+                updateCartCount();
+                renderProducts();
+                renderFeaturedProducts();
+                renderCategories();
+                renderBrands();
+                
+                // Инициализируем поисковый менеджер
+                searchManager.init(products);
+                
+                return Promise.resolve();
+            } else {
+                return Promise.reject(error);
+            }
+        });
 }
 
-// ===== ФУНКЦІЇ ПАГІНАЦІЇ =====
+// Показать скелетоны загрузки
+function showEnhancedLoadingSkeleton() {
+    const grid = document.getElementById("product-grid");
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    const skeletonCount = window.innerWidth <= 768 ? 4 : 8;
+    
+    for (let i = 0; i < skeletonCount; i++) {
+        const skeleton = document.createElement("div");
+        skeleton.className = "card skeleton-item";
+        skeleton.innerHTML = `
+            <div class="skeleton-img"></div>
+            <div class="skeleton-title"></div>
+            <div class="skeleton-text"></div>
+            <div class="skeleton-text" style="width: 80%;"></div>
+            <div class="skeleton-price"></div>
+            <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
+        `;
+        grid.appendChild(skeleton);
+    }
+    
+    document.getElementById('products-count').textContent = 'Завантаження товарів...';
+}
 
-function changePage(page) {
-  currentPage = page;
-  showLoadingSkeleton();
-  
-  setTimeout(() => {
-    renderProducts();
+// Рендеринг товаров
+function renderProducts() {
+    const grid = document.getElementById("product-grid");
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    if (isProductsLoading) {
+        showEnhancedLoadingSkeleton();
+        document.getElementById('products-count').textContent = 'Завантаження товарів...';
+        return;
+    }
+    
+    let filteredProducts = getFilteredProducts();
+    
+    document.getElementById('products-title').textContent = showingFavorites ? 'Обрані товари' : '';
+    document.getElementById('products-count').textContent = `Знайдено: ${filteredProducts.length}`;
+    
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const paginatedProducts = filteredProducts.slice(startIndex, startIndex + productsPerPage);
+    
+    if (paginatedProducts.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-cart">
+                <i class="fas fa-search"></i>
+                <h3>Товари не знайдено</h3>
+                <p>Спробуйте змінити параметри фільтрации</p>
+            </div>
+        `;
+        updatePagination();
+        return;
+    }
+    
+    const viewMode = localStorage.getItem(VIEW_MODE_KEY) || 'grid';
+    const isListView = viewMode === 'list';
+    
+    if (isListView) {
+        grid.classList.add('list-view');
+    } else {
+        grid.classList.remove('list-view');
+    }
+    
+    paginatedProducts.forEach(product => {
+        const card = document.createElement("div");
+        card.className = "card";
+        
+        const isFavorite = favorites[product.id];
+        
+        card.innerHTML = `
+            ${product.discount ? `<div class="card-discount">-${product.discount}%</div>` : ''}
+            ${product.isNew ? '<div class="card-badge">Новинка</div>' : ''}
+            <img src="${product.image || 'https://via.placeholder.com/300x300?text=Fashion+Store'}" alt="${product.title}" loading="lazy">
+            <h3>${product.title}</h3>
+            <div class="price-container">
+                <span class="price">${formatPrice(product.price)} ₴</span>
+                ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)} ₴</span>` : ''}
+            </div>
+            
+            <div class="card-actions">
+                <button class="btn btn-buy" onclick="addToCart('${product.id}')">
+                    <i class="fas fa-shopping-cart"></i> Купити
+                </button>
+                <button class="btn btn-detail" onclick="showProductDetail('${product.id}')">
+                    <i class="fas fa-info"></i> Детальніше
+                </button>
+                <button class="btn-favorite ${isFavorite ? 'active' : ''}" onclick="toggleFavorite('${product.id}')">
+                    <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
+                </button>
+            </div>
+        `;
+        
+        grid.appendChild(card);
+    });
+    
     updatePagination();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, 100);
+}
+
+// Пагинация
+function changePage(page) {
+    currentPage = page;
+    showEnhancedLoadingSkeleton();
+    
+    setTimeout(() => {
+        renderProducts();
+        updatePagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
 }
 
 function updatePagination() {
-  const paginationContainer = document.getElementById("pagination");
-  if (!paginationContainer) return;
-  
-  let filteredProducts = getFilteredProducts();
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-  
-  if (totalPages <= 1) {
-    paginationContainer.style.display = 'none';
-    return;
-  }
-  
-  paginationContainer.style.display = 'flex';
-  paginationContainer.innerHTML = '';
-  
-  const prevButton = document.createElement('button');
-  prevButton.innerHTML = '&laquo;';
-  prevButton.disabled = currentPage === 1;
-  prevButton.onclick = () => changePage(currentPage - 1);
-  paginationContainer.appendChild(prevButton);
-  
-  let startPage = Math.max(1, currentPage - 2);
-  let endPage = Math.min(totalPages, startPage + 4);
-  
-  if (endPage - startPage < 4) {
-    startPage = Math.max(1, endPage - 4);
-  }
-  
-  for (let i = startPage; i <= endPage; i++) {
-    const button = document.createElement('button');
-    button.textContent = i;
-    button.classList.toggle('active', i === currentPage);
-    button.onclick = () => changePage(i);
-    paginationContainer.appendChild(button);
-  }
-  
-  const nextButton = document.createElement('button');
+    const paginationContainer = document.getElementById("pagination");
+    if (!paginationContainer) return;
+    
+    let filteredProducts = getFilteredProducts();
+    const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+    
+    if (totalPages <= 1) {
+        paginationContainer.style.display = 'none';
+        return;
+    }
+    
+    paginationContainer.style.display = 'flex';
+    paginationContainer.innerHTML = '';
+    
+    const prevButton = document.createElement('button');
+    prevButton.innerHTML = '&laquo;';
+    prevButton.disabled = currentPage === 1;
+    prevButton.onclick = () => changePage(currentPage - 1);
+    paginationContainer.appendChild(prevButton);
+    
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        const button = document.createElement('button');
+        button.textContent = i;
+        button.classList.toggle('active', i === currentPage);
+        button.onclick = () => changePage(i);
+        paginationContainer.appendChild(button);
+    }
+    
+    const nextButton = document.createElement('button');
     nextButton.innerHTML = '&raquo;';
     nextButton.disabled = currentPage === totalPages;
     nextButton.onclick = () => changePage(currentPage + 1);
     paginationContainer.appendChild(nextButton);
 }
 
+// Фильтрация товаров
 function getFilteredProducts() {
-  let filteredProducts = [...products];
-  
-  if (showingFavorites) {
-    filteredProducts = filteredProducts.filter(product => favorites[product.id]);
-  }
-  
-  if (currentFilters.search) {
-    filteredProducts = searchProducts(currentFilters.search);
-  }
-  
-  if (currentFilters.category) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.category === currentFilters.category
-    );
-  }
-  
-  if (currentFilters.brand) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.brand === currentFilters.brand
-    );
-  }
-  
-  if (currentFilters.minPrice) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.price >= currentFilters.minPrice
-    );
-  }
-  
-  if (currentFilters.maxPrice) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.price <= currentFilters.maxPrice
-    );
-  }
-  
-  if (currentFilters.availability) {
-    filteredProducts = filteredProducts.filter(product => 
-      currentFilters.availability === 'in-stock' ? product.inStock : !product.inStock
-    );
-  }
-  
-  if (currentFilters.source) {
-    filteredProducts = filteredProducts.filter(product => 
-      product.source === currentFilters.source
-    );
-  }
-  
-  switch (currentFilters.sort) {
-    case 'price-asc':
-      filteredProducts.sort((a, b) => a.price - b.price);
-      break;
-    case 'price-desc':
-      filteredProducts.sort((a, b) => b.price - a.price);
-      break;
-    case 'name-asc':
-      filteredProducts.sort((a, b) => a.title.localeCompare(b.title));
-      break;
-    case 'name-desc':
-      filteredProducts.sort((a, b) => b.title.localeCompare(a.title));
-      break;
-    default:
-      filteredProducts.sort((a, b) => {
-        if (a.isPopular && !b.isPopular) return -1;
-        if (!a.isPopular && b.isPopular) return 1;
-        if (a.isNew && !b.isNew) return -1;
-        if (!a.isNew && b.isNew) return 1;
-        
-        return 0;
-      });
-      break;
-  }
-  
-  return filteredProducts;
-}
-
-// ===== КІНЕЦЬ ФУНКЦІЇ ПАГІНАЦІЇ =====
-
-// Функція для завантаження XML-фіду
-async function loadFromFeed() {
-  const messageElement = document.getElementById("feed-message");
-  messageElement.textContent = "Завантаження даних...";
-  
-  const feedUrl = localStorage.getItem(FEED_URL_KEY) || document.getElementById("feed-url").value;
-  
-  if (!feedUrl) {
-    messageElement.textContent = "Введіть URL фіду";
-    showNotification("Введіть URL фіду для завантаження");
-    return;
-  }
-  
-  if (document.getElementById("feed-url").value) {
-    localStorage.setItem(FEED_URL_KEY, document.getElementById("feed-url").value);
-  }
-  
-  try {
-    const proxyUrl = 'https://corsproxy.io/?';
-    const response = await fetch(proxyUrl + encodeURIComponent(feedUrl));
+    let filteredProducts = [...products];
     
-    if (!response.ok) {
-      throw new Error(`Помилка HTTP: ${response.status}`);
+    if (showingFavorites) {
+        filteredProducts = filteredProducts.filter(product => favorites[product.id]);
     }
     
-    const xmlText = await response.text();
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-    
-    if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
-      throw new Error("Помилка парсингу XML");
+    if (currentFilters.search) {
+        filteredProducts = searchProducts(currentFilters.search);
     }
     
-    let items = [];
-    const offers = xmlDoc.getElementsByTagName("offer");
-    
-    for (let i = 0; i < offers.length; i++) {
-      const offer = offers[i];
-      const id = offer.getAttribute("id") || `feed-${i}`;
-      const getValue = (tagName) => {
-        const element = offer.getElementsByTagName(tagName)[0];
-        return element ? element.textContent.trim() : "";
-      };
-      
-      const title = getValue("name") || getValue("title") || getValue("model");
-      const priceText = getValue("price");
-      const price = priceText ? parseFloat(priceText.replace(/[^0-9.,]/g, "").replace(",", ".")) : 0;
-      const description = getValue("description") || "";
-      const brand = getValue("vendor") || getValue("brand") || "Невідомо";
-      
-      let image = "";
-      const pictureElement = offer.getElementsByTagName("picture")[0];
-      if (pictureElement) {
-        image = pictureElement.textContent.trim();
-      }
-      
-      const category = getValue("category") || "Без категорії";
-      
-      items.push({
-        id,
-        title,
-        price,
-        description,
-        image: image,
-        category,
-        brand,
-        fromFeed: true,
-        inStock: true,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+    if (currentFilters.category) {
+        filteredProducts = filteredProducts.filter(product => 
+            product.category === currentFilters.category
+        );
     }
     
-    if (items.length === 0) {
-      throw new Error("Не знайдено товарів у фіді");
+    if (currentFilters.brand) {
+        filteredProducts = filteredProducts.filter(product => 
+            product.brand === currentFilters.brand
+        );
     }
     
-    const batch = db.batch();
-    const productsRef = db.collection("products");
-    
-    for (const item of items) {
-      const productRef = productsRef.doc(item.id);
-      batch.set(productRef, item, { merge: true });
+    if (currentFilters.minPrice) {
+        filteredProducts = filteredProducts.filter(product => 
+            product.price >= currentFilters.minPrice
+        );
     }
     
-    await batch.commit();
+    if (currentFilters.maxPrice) {
+        filteredProducts = filteredProducts.filter(product => 
+            product.price <= currentFilters.maxPrice
+        );
+    }
     
-    localStorage.setItem(FEED_UPDATE_TIME_KEY, new Date().getTime());
+    if (currentFilters.availability) {
+        filteredProducts = filteredProducts.filter(product => 
+            currentFilters.availability === 'in-stock' ? product.inStock : !product.inStock
+        );
+    }
     
-    messageElement.textContent = `Завантажено ${items.length} товарів`;
-    showNotification("Дані успішно завантажені з фіду");
+    if (currentFilters.source && currentFilters.source !== 'all') {
+        filteredProducts = filteredProducts.filter(product => 
+            product.source === currentFilters.source
+        );
+    }
     
-  } catch (error) {
-    console.error("Помилка завантаження фіду:", error);
-    messageElement.textContent = `Помилка: ${error.message}`;
-    showNotification("Помилка завантаження даних з фіду", "error");
-  }
-}
-
-// Збереження продуктів в Firestore
-function saveProduct(product) {
-  const productData = {
-    ...product,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  
-  if (!product.id) {
-    productData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-    productData.id = generateId();
-  }
-  
-  const productRef = db.collection("products").doc(productData.id);
-  
-  return productRef.set(productData, { merge: true })
-    .then(() => {
-      showNotification("Товар успішно збережено");
-      loadProducts();
-      return productData.id;
-    })
-    .catch((error) => {
-      console.error("Помилка збереження товару: ", error);
-      showNotification("Помилка збереження товару", "error");
-      
-      if (!product.id) {
-        product.id = generateId();
-        products.push(product);
-      } else {
-        const index = products.findIndex(p => p.id === product.id);
-        if (index !== -1) {
-          products[index] = product;
-        } else {
-          products.push(product);
-        }
-      }
-      
-      localStorage.setItem('products_backup', JSON.stringify(products));
-      renderProducts();
-      
-      return product.id;
-    });
-}
-
-// Генерація ID для нового товару
-function generateId() {
-  return 'product-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-}
-
-// Показати скелетон завантаження
-function showLoadingSkeleton() {
-  const grid = document.getElementById("product-grid");
-  grid.innerHTML = '';
-  
-  for (let i = 0; i < 8; i++) {
-    const skeleton = document.createElement("div");
-    skeleton.className = "card";
-    skeleton.innerHTML = `
-      <div class="skeleton-img"></div>
-      <div class="skeleton-title"></div>
-      <div class="skeleton-text"></div>
-      <div class="skeleton-text" style="width: 80%;"></div>
-      <div class="skeleton-price"></div>
-      <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
-    `;
-    grid.appendChild(skeleton);
-  }
-}
-
-// Добавьте эту функцию для улучшенного отображения скелетонов
-function showEnhancedLoadingSkeleton() {
-  const grid = document.getElementById("product-grid");
-  if (!grid) return;
-  
-  grid.innerHTML = '';
-  
-  // Показать больше скелетонов для лучшего UX
-  const skeletonCount = window.innerWidth <= 768 ? 4 : 8;
-  
-  for (let i = 0; i < skeletonCount; i++) {
-    const skeleton = document.createElement("div");
-    skeleton.className = "card skeleton-item";
-    skeleton.innerHTML = `
-      <div class="skeleton-img"></div>
-      <div class="skeleton-title"></div>
-      <div class="skeleton-text"></div>
-      <div class="skeleton-text" style="width: 80%;"></div>
-      <div class="skeleton-price"></div>
-      <div class="skeleton-text" style="height: 36px; margin-top: 15px;"></div>
-    `;
-    grid.appendChild(skeleton);
-  }
-  
-  document.getElementById('products-count').textContent = 'Завантаження товарів...';
-}
-
-// Рендеринг продуктів
-function renderProducts() {
-  const grid = document.getElementById("product-grid");
-  if (!grid) return;
-  
-  grid.innerHTML = '';
-  
-  // Показать скелетоны если товары еще загружаются
-  if (isProductsLoading) {
-    showLoadingSkeleton();
-    document.getElementById('products-count').textContent = 'Завантаження товарів...';
-    return;
-  }
-  
-  let filteredProducts = getFilteredProducts();
-  
-  document.getElementById('products-title').textContent = showingFavorites ? 'Обрані товари' : 'Каталог зоотоварів';
-  document.getElementById('products-count').textContent = `Знайдено: ${filteredProducts.length}`;
-  
-  const startIndex = (currentPage - 1) * productsPerPage;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + productsPerPage);
-  
-  if (paginatedProducts.length === 0) {
-    grid.innerHTML = `
-      <div class="empty-cart">
-        <i class="fas fa-search"></i>
-        <h3>Товари не знайдено</h3>
-        <p>Спробуйте змінити параметри фільтрации</p>
-      </div>
-    `;
-    updatePagination();
-    return;
-  }
-  
-  const viewMode = localStorage.getItem(VIEW_MODE_KEY) || 'grid';
-  const isListView = viewMode === 'list';
-  
-  if (isListView) {
-    grid.classList.add('list-view');
-  } else {
-    grid.classList.remove('list-view');
-  }
-  
-  paginatedProducts.forEach(product => {
-    const card = document.createElement("div");
-    card.className = "card";
+    switch (currentFilters.sort) {
+        case 'price-asc':
+            filteredProducts.sort((a, b) => a.price - b.price);
+            break;
+        case 'price-desc':
+            filteredProducts.sort((a, b) => b.price - a.price);
+            break;
+        case 'name-asc':
+            filteredProducts.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+        case 'name-desc':
+            filteredProducts.sort((a, b) => b.title.localeCompare(a.title));
+            break;
+        case 'relevance':
+            // Уже отсортировано в searchProductsEnhanced
+            break;
+        default:
+            filteredProducts.sort((a, b) => {
+                if (a.isPopular && !b.isPopular) return -1;
+                if (!a.isPopular && b.isPopular) return 1;
+                return 0;
+            });
+            break;
+    }
     
-    const isFavorite = favorites[product.id];
-    
-    card.innerHTML = `
-  ${product.discount ? `<div class="card-discount">-${product.discount}%</div>` : ''}
-  ${product.isNew ? '<div class="card-badge">Новинка</div>' : ''}
-  <img src="${product.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${product.title}" loading="lazy">
-  <h3>${product.title}</h3>
-  <div class="price-container">
-    <span class="price">${formatPrice(product.price)} ₴</span>
-    ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)} ₴</span>` : ''}
-  </div>
-  
-  <div class="card-actions">
-    <button class="btn btn-buy" onclick="addToCart('${product.id}')">
-      <i class="fas fa-shopping-cart"></i> Купити
-    </button>
-    <button class="btn btn-detail" onclick="showProductDetail('${product.id}')">
-      <i class="fas fa-info"></i> Детальніше
-    </button>
-    <button class="btn-favorite ${isFavorite ? 'active' : ''}" onclick="toggleFavorite('${product.id}')">
-      <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
-    </button>
-  </div>
-`;
-    
-    grid.appendChild(card);
-  });
-  
-  updatePagination();
+    return filteredProducts;
 }
 
 // Рендеринг популярных товаров
 function renderFeaturedProducts() {
-  const featuredContainer = document.getElementById("featured-products");
-  featuredContainer.innerHTML = '';
-  
-  let featuredProducts = [];
-  
-  const popularProducts = products.filter(product => product.isPopular);
-  
-  if (popularProducts.length >= 3) {
-    featuredProducts = shuffleArray(popularProducts).slice(0, 5);
-  } else {
-    featuredProducts = shuffleArray([...products]).slice(0, 5);
-  }
-  
-  featuredProducts.forEach(product => {
-    const item = document.createElement("div");
-    item.className = "featured-item";
-    item.innerHTML = `
-      <img src="${product.image || 'https://via.placeholder.com/60x60?text=No+Image'}" alt="${product.title}">
-      <div class="featured-item-info">
-        <h4 class="featured-item-title">${product.title}</h4>
-        <div class="featured-item-price">${formatPrice(product.price)} ₴</div>
-      </div>
-    `;
+    const featuredContainer = document.getElementById("featured-products");
+    if (!featuredContainer) return;
     
-    item.addEventListener('click', () => showProductDetail(product.id));
-    featuredContainer.appendChild(item);
-  });
+    featuredContainer.innerHTML = '';
+    
+    let featuredProducts = [];
+    
+    const popularProducts = products.filter(product => product.isPopular);
+    
+    if (popularProducts.length >= 3) {
+        featuredProducts = shuffleArray(popularProducts).slice(0, 5);
+    } else {
+        featuredProducts = shuffleArray([...products]).slice(0, 5);
+    }
+    
+    featuredProducts.forEach(product => {
+        const item = document.createElement("div");
+        item.className = "featured-item";
+        item.innerHTML = `
+            <img src="${product.image || 'https://via.placeholder.com/60x60?text=Fashion'}" alt="${product.title}">
+            <div class="featured-item-info">
+                <h4 class="featured-item-title">${product.title}</h4>
+                <div class="featured-item-price">${formatPrice(product.price)} ₴</div>
+            </div>
+        `;
+        
+        item.addEventListener('click', () => showProductDetail(product.id));
+        featuredContainer.appendChild(item);
+    });
 }
 
-// Рендеринг категорії
+// Рендеринг категорий
 function renderCategories() {
-  const categorySelect = document.getElementById("category");
-  
-  while (categorySelect.options.length > 1) {
-    categorySelect.remove(1);
-  }
-  
-  const categories = [...new Set(products.map(product => product.category))].filter(Boolean);
-  
-  categories.forEach(category => {
-    const option = document.createElement("option");
-    option.value = category;
-    option.textContent = translateCategory(category);
-    categorySelect.appendChild(option);
-  });
-  
-  renderCategoriesList();
+    const categorySelect = document.getElementById("category");
+    
+    while (categorySelect.options.length > 1) {
+        categorySelect.remove(1);
+    }
+    
+    const categories = [...new Set(products.map(product => product.category))].filter(Boolean);
+    
+    categories.forEach(category => {
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = translateCategory(category);
+        categorySelect.appendChild(option);
+    });
+    
+    renderCategoriesList();
 }
 
-// Функция для рендеринга списка категорий
 function renderCategoriesList() {
     const categoriesList = document.getElementById('categories-list');
     const mobileCategoriesList = document.getElementById('mobile-categories-list');
@@ -2104,7 +2770,6 @@ function renderCategoriesList() {
     let categoriesHTML = '';
     let mobileCategoriesHTML = '';
 
-    // Для десктопной версии
     categoriesHTML += `
         <div class="category-item active" onclick="selectCategory('')">
             Всі категорії
@@ -2112,7 +2777,6 @@ function renderCategoriesList() {
         </div>
     `;
 
-    // Для мобильной версии
     mobileCategoriesHTML += `
         <div class="category-item active" onclick="selectMobileCategory('')">
             Всі категорії
@@ -2125,7 +2789,7 @@ function renderCategoriesList() {
             <div class="category-item" onclick="selectCategory('${category}')">
                 ${translateCategory(category)}
                 <span class="category-count">${categoryCounts[category]}</span>
-            </div>
+        </div>
         `;
         
         mobileCategoriesHTML += `
@@ -2140,7 +2804,6 @@ function renderCategoriesList() {
     mobileCategoriesList.innerHTML = mobileCategoriesHTML;
 }
 
-// Функция выбора категории
 function selectCategory(category) {
     document.getElementById('category').value = category;
     
@@ -2164,7 +2827,6 @@ function selectCategory(category) {
     applyFilters();
 }
 
-// Функция выбора категории для мобильной версии
 function selectMobileCategory(category) {
     document.getElementById('category').value = category;
     
@@ -2187,2374 +2849,3068 @@ function selectMobileCategory(category) {
     currentFilters.category = category;
 }
 
-// Рендеринг брендів для зоомагазина
+// Рендеринг брендов
 function renderBrands() {
-  const brandSelect = document.getElementById("brand");
-  
-  // Сначала добавляем статические бренды для зоотоваров
-  const staticBrands = [
-    "Royal Canin",
-    "Purina",
-    "Hill's",
-    "Trixie",
-    "Ferplast",
-    "Tetra",
-    "Pedigree",
-    "Whiskas",
-    "Friskies",
-    "Iams"
-  ];
-  
-  // Удаляем все опции кроме первой
-  while (brandSelect.options.length > 1) {
-    brandSelect.remove(1);
-  }
-  
-  // Добавляем статические бренды
-  staticBrands.forEach(brand => {
-    const option = document.createElement("option");
-    option.value = brand;
-    option.textContent = brand;
-    brandSelect.appendChild(option);
-  });
-  
-  // Теперь добавляем бренды из продуктов
-  const productBrands = [...new Set(products.map(product => product.brand))].filter(Boolean);
-  
-  productBrands.forEach(brand => {
-    // Проверяем, нет ли уже такого бренда
-    if (!staticBrands.includes(brand)) {
-      const option = document.createElement("option");
-      option.value = brand;
-      option.textContent = brand;
-      brandSelect.appendChild(option);
+    const brandSelect = document.getElementById("brand");
+    
+    while (brandSelect.options.length > 1) {
+        brandSelect.remove(1);
     }
-  });
+    
+    const brands = [...new Set(products.map(product => product.brand))].filter(Boolean);
+    
+    brands.forEach(brand => {
+        const option = document.createElement("option");
+        option.value = brand;
+        option.textContent = brand;
+        brandSelect.appendChild(option);
+    });
 }
 
-// Форматування ціни
+// Форматирование цены
 function formatPrice(price) {
-  return new Intl.NumberFormat('uk-UA').format(price);
+    return new Intl.NumberFormat('uk-UA').format(price);
 }
 
-// Показати сповіщення
+// Показать уведомление
 function showNotification(message, type = "success") {
-  const notification = document.getElementById("notification");
-  const text = document.getElementById("notification-text");
-  text.textContent = message;
-  notification.className = `notification ${type}`;
-  notification.classList.add("show");
-  
-  setTimeout(() => {
-    notification.classList.remove("show");
-  }, 3000);
+    const notification = document.getElementById("notification");
+    const text = document.getElementById("notification-text");
+    text.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.classList.add("show");
+    
+    setTimeout(() => {
+        notification.classList.remove("show");
+    }, 3000);
 }
 
-// Додавання товару в кошик
+// Корзина и избранное
 function addToCart(productId) {
-  if (!cart[productId]) {
-    cart[productId] = 0;
-  }
-  cart[productId]++;
-  
-  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-  
-  updateCartCount();
-  showNotification("Товар додано до кошика");
+    if (!cart[productId]) {
+        cart[productId] = { quantity: 0, comment: '' };
+    }
+    cart[productId].quantity++;
+    
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    
+    updateCartCount();
+    showNotification("Товар додано до кошика");
 }
 
-// Оновлення лічильника кошика
 function updateCartCount() {
-  const count = Object.values(cart).reduce((total, qty) => total + qty, 0);
-  document.getElementById("cart-count").textContent = count;
+    const count = Object.values(cart).reduce((total, item) => total + item.quantity, 0);
+    document.getElementById("cart-count").textContent = count;
 }
 
-// Додавання/видалення з обраного
 function toggleFavorite(productId) {
-  if (favorites[productId]) {
-    delete favorites[productId];
-  } else {
-    favorites[productId] = true;
-  }
-  
-  localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
-  
-  if (showingFavorites) {
-    renderProducts();
-  } else {
-    const heartIcon = document.querySelector(`button[onclick="toggleFavorite('${productId}')"] i`);
-    if (heartIcon) {
-      heartIcon.className = favorites[productId] ? 'fas fa-heart' : 'far fa-heart';
-      heartIcon.parentElement.className = `btn-favorite ${favorites[productId] ? 'active' : ''}`;
-    }
-  }
-  
-  showNotification(favorites[productId] ? "Додано в обране" : "Видалено з обраного");
-}
-
-// Переключення режиму відображення обраного
-function toggleFavorites() {
-  showingFavorites = !showingFavorites;
-  
-  const favButton = document.getElementById("favorites-btn");
-  if (showingFavorites) {
-    favButton.innerHTML = '<i class="fas fa-heart"></i>';
-    favButton.style.color = '#e74c3c';
-  } else {
-    favButton.innerHTML = '<i class="far fa-heart"></i>';
-    favButton.style.color = '';
-  }
-  
-  applyFilters();
-}
-
-// Застосування фільтрів
-function applyFilters() {
-  const minPrice = document.getElementById("price-min").value ? parseInt(document.getElementById("price-min").value) : null;
-  const maxPrice = document.getElementById("price-max").value ? parseInt(document.getElementById("price-max").value) : null;
-  
-  currentFilters.minPrice = minPrice;
-  currentFilters.maxPrice = maxPrice;
-  currentFilters.category = document.getElementById("category").value;
-  currentFilters.brand = document.getElementById("brand").value;
-  currentFilters.availability = document.getElementById("availability").value;
-  currentFilters.sort = document.getElementById("sort").value;
-  
-  const currentCategory = currentFilters.category;
-  document.querySelectorAll('.category-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  
-  if (currentCategory === '') {
-    document.querySelectorAll('.category-item')[0].classList.add('active');
-  } else {
-    const categoryItems = document.querySelectorAll('.category-item');
-    for (let item of categoryItems) {
-      if (item.textContent.includes(translateCategory(currentCategory))) {
-        item.classList.add('active');
-        break;
-      }
-    }
-  }
-  
-  currentPage = 1;
-  
-  // Показать скелетоны при применении фильтров (если товары загружаются)
-  if (isProductsLoading) {
-    showEnhancedLoadingSkeleton();
-  } else {
-    renderProducts();
-  }
-  
-  const filteredProducts = getFilteredProducts();
-  if (!isProductsLoading) {
-    document.getElementById('products-count').textContent = `Знайдено: ${filteredProducts.length}`;
-  }
-  
-  // Закрываем мобильные фильтры после применения (если они открыты)
-  closeMobileFilters();
-}
-
-// Скидання фільтрів
-function resetFilters() {
-  document.getElementById("price-min").value = '';
-  document.getElementById("price-max").value = '';
-  document.getElementById("category").value = '';
-  document.getElementById("brand").value = '';
-  document.getElementById("availability").value = '';
-  document.getElementById("sort").value = 'default';
-  document.getElementById("search").value = '';
-  
-  selectCategory('');
-  
-  currentFilters = {
-    category: '',
-    brand: '',
-    minPrice: null,
-    maxPrice: null,
-    sort: 'default',
-    search: '',
-    availability: '',
-    source: ''
-  };
-  
-  applyFilters();
-}
-
-// Встановлення режиму перегляду
-function setViewMode(mode) {
-  localStorage.setItem(VIEW_MODE_KEY, mode);
-  
-  const gridBtn = document.getElementById("grid-view");
-  const listBtn = document.getElementById("list-view");
-  
-  if (mode === 'grid') {
-    gridBtn.classList.add('active');
-    listBtn.classList.remove('active');
-  } else {
-    gridBtn.classList.remove('active');
-    listBtn.classList.add('active');
-  }
-  
-  renderProducts();
-}
-
-// Показати деталі товару
-function showProductDetail(productId) {
-  const product = products.find(p => p.id === productId);
-  if (!product) return;
-  
-  const modalContent = document.getElementById("modal-content");
-  modalContent.innerHTML = `
-    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-    <h3>${product.title}</h3>
-    <div class="product-detail">
-      <div class="product-image">
-        <img src="${product.image || 'https://via.placeholder.com/400x300?text=No+Image'}" alt="${product.title}">
-      </div>
-      <div class="product-info">
-        <div class="price-container">
-          <span class="detail-price">${formatPrice(product.price)} ₴</span>
-          ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)} ₴</span>` : ''}
-        </div>
-        <div class="product-description">
-          <h4>Опис</h4>
-          <p>${product.description || 'Опис відсутній'}</p>
-        </div>
-        <div class="quantity-control">
-          <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
-          <input type="number" class="quantity-input" id="product-quantity" value="1" min="1">
-          <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
-        </div>
-        <div class="detail-actions">
-          <button class="btn btn-buy" onclick="addToCartWithQuantity('${product.id}')">
-            <i class="fas fa-shopping-cart"></i> Додати до кошика
-          </button>
-          <button class="btn-favorite ${favorites[product.id] ? 'active' : ''}" onclick="toggleFavorite('${product.id}')">
-            <i class="${favorites[product.id] ? 'fas' : 'far'} fa-heart"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="product-reviews">
-      <h4>Відгуки про товар</h4>
-      <div id="reviews-container-${product.id}"></div>
-      
-      ${currentUser ? `
-        <div class="add-review-section">
-          <h4>Залишити відгук</h4>
-          <form onsubmit="addReview(event, '${product.id}')">
-            <div class="form-group">
-              <label>Ваша оцінка</label>
-              <div class="rating-stars">
-                <span onclick="setRating(1)">★</span>
-                <span onclick="setRating(2)">★</span>
-                <span onclick="setRating(3)">★</span>
-                <span onclick="setRating(4)">★</span>
-                <span onclick="setRating(5)">★</span>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Ваш відгук</label>
-              <textarea id="review-text" required></textarea>
-            </div>
-            <button type="submit" class="btn">Залишити відгук</button>
-          </form>
-        </div>
-      ` : `
-        <p>Увійдіть, щоб залишити відгук</p>
-      `}
-    </div>
-  `;
-  
-  loadReviews(product.id);
-  
-  currentRating = 0;
-  updateRatingStars();
-  
-  openModal();
-  
-  setTimeout(optimizeModalForMobile, 100);
-}
-
-// Функция для установки рейтинга
-function setRating(rating) {
-  currentRating = rating;
-  updateRatingStars();
-}
-
-// Функция для обновления отображения звезд рейтинга
-function updateRatingStars() {
-  const stars = document.querySelectorAll('.rating-stars span');
-  stars.forEach((star, index) => {
-    if (index < currentRating) {
-      star.classList.add('active');
+    if (favorites[productId]) {
+        delete favorites[productId];
     } else {
-      star.classList.remove('active');
+        favorites[productId] = true;
     }
-  });
+    
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+    
+    if (showingFavorites) {
+        renderProducts();
+    } else {
+        const heartIcon = document.querySelector(`button[onclick="toggleFavorite('${productId}')"] i`);
+        if (heartIcon) {
+            heartIcon.className = favorites[productId] ? 'fas fa-heart' : 'far fa-heart';
+            heartIcon.parentElement.className = `btn-favorite ${favorites[productId] ? 'active' : ''}`;
+        }
+    }
+    
+    showNotification(favorites[productId] ? "Додано в обране" : "Видалено з обраного");
 }
 
-// Функция загрузки отзывов для товара
+function toggleFavorites() {
+    showingFavorites = !showingFavorites;
+    
+    const favButton = document.getElementById("favorites-btn");
+    if (showingFavorites) {
+        favButton.innerHTML = '<i class="fas fa-heart"></i>';
+        favButton.style.color = '#e74c3c';
+    } else {
+        favButton.innerHTML = '<i class="far fa-heart"></i>';
+        favButton.style.color = '';
+    }
+    
+    applyFilters();
+}
+
+// Применение фильтров
+function applyFilters() {
+    const minPrice = document.getElementById("price-min")?.value ? parseInt(document.getElementById("price-min").value) : null;
+    const maxPrice = document.getElementById("price-max")?.value ? parseInt(document.getElementById("price-max").value) : null;
+    
+    currentFilters.minPrice = minPrice;
+    currentFilters.maxPrice = maxPrice;
+    currentFilters.category = document.getElementById("category")?.value || '';
+    currentFilters.brand = document.getElementById("brand")?.value || '';
+    currentFilters.availability = document.getElementById("availability")?.value || '';
+    currentFilters.sort = document.getElementById("sort")?.value || 'default';
+    currentFilters.search = document.getElementById("search")?.value || '';
+    
+    currentPage = 1;
+    
+    if (isProductsLoading) {
+        showEnhancedLoadingSkeleton();
+    } else {
+        renderProducts();
+    }
+    
+    const filteredProducts = getFilteredProducts();
+    if (!isProductsLoading) {
+        document.getElementById('products-count').textContent = `Знайдено: ${filteredProducts.length}`;
+    }
+    
+    closeMobileFilters();
+}
+
+// Сброс фильтров
+function resetFilters() {
+    document.getElementById("price-min").value = '';
+    document.getElementById("price-max").value = '';
+    document.getElementById("category").value = '';
+    document.getElementById("brand").value = '';
+    document.getElementById("availability").value = '';
+    document.getElementById("sort").value = 'default';
+    document.getElementById("search").value = '';
+    
+    selectCategory('');
+    
+    currentFilters = {
+        category: '',
+        brand: '',
+        minPrice: null,
+        maxPrice: null,
+        sort: 'default',
+        search: '',
+        availability: '',
+        source: 'all'
+    };
+    
+    applyFilters();
+}
+
+// Установка режима просмотра
+function setViewMode(mode) {
+    localStorage.setItem(VIEW_MODE_KEY, mode);
+    
+    const gridBtn = document.getElementById("grid-view");
+    const listBtn = document.getElementById("list-view");
+    
+    if (mode === 'grid') {
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+    } else {
+        gridBtn.classList.remove('active');
+        listBtn.classList.add('active');
+    }
+    
+    renderProducts();
+}
+
+// ===== ДЕТАЛИ ТОВАРА И ОТЗЫВЫ =====
+
+let currentRating = 0;
+
+// ===== ФУНКЦИЯ ГЕНЕРАЦИИ HTML ДЛЯ ХАРАКТЕРИСТИК =====
+function generateSpecificationsHTML(product) {
+    if (!product.specifications && !product.size && !product.color && !product.material) {
+        return '<p></p>';
+    }
+    
+    let specsHTML = '';
+    
+    // Обрабатываем строку характеристик
+    if (typeof product.specifications === 'string' && product.specifications.trim()) {
+        const lines = product.specifications.split('\n').filter(line => line.trim());
+        specsHTML = lines.map(line => {
+            const [key, ...valueParts] = line.split(':');
+            if (key && valueParts.length > 0) {
+                const value = valueParts.join(':').trim();
+                return `
+                    <div class="spec-item">
+                        <span class="spec-key">${key.trim()}:</span>
+                        <span class="spec-value">${value}</span>
+                    </div>
+                `;
+            }
+            return '';
+        }).join('');
+    }
+    
+    // Добавляем основные характеристики если они не были включены
+    const mainSpecs = [
+        { key: 'Розмір', value: product.size },
+        { key: 'Колір', value: product.color },
+        { key: 'Матеріал', value: product.material },
+        { key: 'Сезонність', value: product.season },
+        { key: 'Стиль', value: product.style },
+        { key: 'Склад', value: product.composition },
+        { key: 'Країна виробник', value: product.country },
+        { key: 'Догляд', value: product.care }
+    ];
+    
+    mainSpecs.forEach(spec => {
+        if (spec.value && !specsHTML.includes(spec.key)) {
+            specsHTML += `
+                <div class="spec-item">
+                    <span class="spec-key">${spec.key}:</span>
+                    <span class="spec-value">${spec.value}</span>
+                </div>
+            `;
+        }
+    });
+    
+    return specsHTML || '<p></p>';
+}
+
+// ===== ОБНОВЛЕННАЯ ФУНКЦИЯ ПОКАЗА ДЕТАЛЕЙ ТОВАРА С ХАРАКТЕРИСТИКАМИ =====
+function showProductDetail(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    const modalContent = document.getElementById("modal-content");
+    
+    // Формируем HTML для характеристик
+    const specificationsHTML = generateSpecificationsHTML(product);
+    
+    modalContent.innerHTML = `
+        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <h3>${product.title}</h3>
+        <div class="product-detail">
+            <div class="product-image">
+                <img src="${product.image || 'https://via.placeholder.com/400x400?text=Fashion+Product'}" alt="${product.title}" loading="lazy">
+            </div>
+            <div class="product-info">
+                ${product.brand ? `<p class="product-brand"><strong>Бренд:</strong> ${product.brand}</p>` : ''}
+                
+                <div class="price-container">
+                    <span class="detail-price">${formatPrice(product.price)} ₴</span>
+                    ${product.oldPrice ? `<span class="old-price">${formatPrice(product.oldPrice)} ₴</span>` : ''}
+                    ${product.discount ? `<span class="discount-badge">-${product.discount}%</span>` : ''}
+                </div>
+                
+                <div class="product-description">
+                    <h4>Опис</h4>
+                    <p>${product.description || 'Опис відсутній'}</p>
+                </div>
+                
+                <div class="product-specifications">
+                    <h4></h4>
+                    ${specificationsHTML}
+                </div>
+                
+                <div class="availability-status">
+                    <p><strong>Наявність:</strong> 
+                        <span class="${product.inStock ? 'in-stock' : 'out-of-stock'}">
+                            ${product.inStock ? 'В наявності' : 'Немає в наявності'}
+                        </span>
+                    </p>
+                </div>
+                
+                <div class="quantity-control">
+                    <button class="quantity-btn" onclick="changeQuantity(-1)">-</button>
+                    <input type="number" class="quantity-input" id="product-quantity" value="1" min="1">
+                    <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="product-comment">Додайте, будь ласка, ваші побажання</label>
+                    <textarea 
+                        id="product-comment" 
+                        placeholder="Наприклад, побажання щодо товару..."
+                        rows="3"
+                        maxlength="500"
+                    ></textarea>
+                    <div class="char-counter" style="text-align: right; font-size: 0.8em; color: #666;">
+                        <span id="product-comment-chars">0</span>/500 символів
+                    </div>
+                </div>
+                
+                <div class="detail-actions">
+                    <button class="btn btn-buy" onclick="addToCartWithQuantity('${product.id}')" ${!product.inStock ? 'disabled' : ''}>
+                        <i class="fas fa-shopping-cart"></i> 
+                        ${product.inStock ? 'Додати до кошика' : 'Немає в наявності'}
+                    </button>
+                    <button class="btn-favorite ${favorites[product.id] ? 'active' : ''}" onclick="toggleFavorite('${product.id}')">
+                        <i class="${favorites[product.id] ? 'fas' : 'far'} fa-heart"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="product-reviews">
+            <h4>Відгуки про товар</h4>
+            <div id="reviews-container-${product.id}"></div>
+            
+            ${currentUser ? `
+                <div class="add-review-section">
+                    <h4>Залишити відгук</h4>
+                    <form onsubmit="addReview(event, '${product.id}')">
+                        <div class="form-group">
+                            <label>Ваша оцінка</label>
+                            <div class="rating-stars">
+                                <span onclick="setRating(1)">★</span>
+                                <span onclick="setRating(2)">★</span>
+                                <span onclick="setRating(3)">★</span>
+                                <span onclick="setRating(4)">★</span>
+                                <span onclick="setRating(5)">★</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Ваш відгук</label>
+                            <textarea id="review-text" required></textarea>
+                        </div>
+                        <button type="submit" class="btn">Залишити відгук</button>
+                    </form>
+                </div>
+            ` : `
+                <p>Увійдіть, щоб залишити відгук</p>
+            `}
+        </div>
+    `;
+    
+    loadReviews(product.id);
+    currentRating = 0;
+    updateRatingStars();
+    
+    // Добавляем обработчик для подсчета символов в комментарии товара
+    const commentField = document.getElementById('product-comment');
+    const charCounter = document.getElementById('product-comment-chars');
+    
+    if (commentField && charCounter) {
+        commentField.addEventListener('input', function() {
+            const length = this.value.length;
+            charCounter.textContent = length;
+            
+            if (length > 450) {
+                charCounter.style.color = '#e74c3c';
+            } else if (length > 400) {
+                charCounter.style.color = '#f39c12';
+            } else {
+                charCounter.style.color = '#666';
+            }
+        });
+    }
+    
+    openModal();
+}
+
+function setRating(rating) {
+    currentRating = rating;
+    updateRatingStars();
+}
+
+function updateRatingStars() {
+    const stars = document.querySelectorAll('.rating-stars span');
+    stars.forEach((star, index) => {
+        if (index < currentRating) {
+            star.classList.add('active');
+        } else {
+            star.classList.remove('active');
+        }
+    });
+}
+
 function loadReviews(productId) {
-  const reviewsContainer = document.getElementById(`reviews-container-${productId}`);
-  if (!reviewsContainer) return;
-  
-  reviewsContainer.innerHTML = '<p>Завантаження відгуків...</p>';
-  
-  db.collection("reviews")
-    .where("productId", "==", productId)
-    .where("approved", "==", true)
-    .orderBy("createdAt", "desc")
-    .get()
-    .then((querySnapshot) => {
-      if (querySnapshot.empty) {
-        reviewsContainer.innerHTML = "<p>Ще немає відгуків про цей товар</p>";
-        return;
-      }
-      
-      let reviewsHTML = "";
-      querySnapshot.forEach((doc) => {
-        const review = doc.data();
-        const reviewDate = review.createdAt ? review.createdAt.toDate().toLocaleDateString('uk-UA') : '';
-        
-        reviewsHTML += `
-          <div class="review-item">
-            <div class="review-header">
-              <strong>${review.userName}</strong>
-              <div class="review-rating">${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}</div>
-              <span class="review-date">${reviewDate}</span>
-            </div>
-            <p>${review.text}</p>
-          </div>
-        `;
-      });
-      
-      reviewsContainer.innerHTML = reviewsHTML;
-    })
-    .catch((error) => {
-      console.error("Помилка завантаження відгуків: ", error);
-      reviewsContainer.innerHTML = "<p>Помилка завантаження відгуків</p>";
-    });
+    const reviewsContainer = document.getElementById(`reviews-container-${productId}`);
+    if (!reviewsContainer) return;
+    
+    reviewsContainer.innerHTML = '<p>Завантаження відгуків...</p>';
+    
+    db.collection("reviews")
+        .where("productId", "==", productId)
+        .where("approved", "==", true)
+        .orderBy("createdAt", "desc")
+        .get()
+        .then((querySnapshot) => {
+            if (querySnapshot.empty) {
+                reviewsContainer.innerHTML = "<p>Ще немає відгуків про цей товар</p>";
+                return;
+            }
+            
+            let reviewsHTML = "";
+            querySnapshot.forEach((doc) => {
+                const review = doc.data();
+                const reviewDate = review.createdAt ? review.createdAt.toDate().toLocaleDateString('uk-UA') : '';
+                
+                reviewsHTML += `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <strong>${review.userName}</strong>
+                            <div class="review-rating">${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}</div>
+                            <span class="review-date">${reviewDate}</span>
+                        </div>
+                        <p>${review.text}</p>
+                    </div>
+                `;
+            });
+            
+            reviewsContainer.innerHTML = reviewsHTML;
+        })
+        .catch((error) => {
+            console.error("Помилка завантаження відгуків: ", error);
+            reviewsContainer.innerHTML = "<p>Помилка завантаження відгуків</p>";
+        });
 }
 
-// Функция добавления отзыва
 function addReview(event, productId) {
-  event.preventDefault();
-  
-  if (!currentUser) {
-    showNotification("Увійдіть, щоб залишити відгук", "warning");
-    return;
-  }
-  
-  if (currentRating === 0) {
-    showNotification("Будь ласка, оберіть рейтинг", "warning");
-    return;
-  }
-  
-  const text = document.getElementById('review-text').value;
-  
-  const newReview = {
-    productId,
-    userId: currentUser.uid,
-    userName: currentUser.displayName || currentUser.email,
-    rating: currentRating,
-    text,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    approved: false
-  };
-  
-  db.collection("reviews").add(newReview)
-    .then(() => {
-      showNotification("Відгук додано і відправиться на модерацію");
-      document.getElementById('review-text').value = "";
-      currentRating = 0;
-      updateRatingStars();
-      loadReviews(productId);
-    })
-    .catch((error) => {
-      console.error("Помилка додавання відгуку: ", error);
-      showNotification("Помилка додавання відгуку", "error");
-    });
-}
-
-// Додавання товару в кошик із зазначеною кількістю
-function addToCartWithQuantity(productId) {
-  const quantity = parseInt(document.getElementById("product-quantity").value) || 1;
-  
-  if (!cart[productId]) {
-    cart[productId] = 0;
-  }
-  cart[productId] += quantity;
-  
-  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-  
-  updateCartCount();
-  showNotification("Товар додано до кошика");
-  closeModal();
-}
-
-// Зміна кількості товару
-function changeQuantity(delta) {
-  const input = document.getElementById("product-quantity");
-  let value = parseInt(input.value) || 1;
-  value += delta;
-  
-  if (value < 1) value = 1;
-  
-  input.value = value;
-}
-
-// Відкриття кошика
-function openCart() {
-  const modalContent = document.getElementById("modal-content");
-  
-  if (Object.keys(cart).length === 0) {
-    modalContent.innerHTML = `
-      <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-      <h3>Кошик</h3>
-      <div class="empty-cart">
-        <i class="fas fa-shopping-cart"></i>
-        <h3>Кошик порожній</h3>
-        <p>Додайте товари з каталогу</p>
-      </div>
-    `;
-  } else {
-    let total = 0;
-    let cartItemsHTML = '';
+    event.preventDefault();
     
-    for (const [productId, quantity] of Object.entries(cart)) {
-      const product = products.find(p => p.id === productId);
-      if (product) {
-        const itemTotal = product.price * quantity;
-        total += itemTotal;
-        
-        cartItemsHTML += `
-          <div class="cart-item">
-            <img src="${product.image || 'https://via.placeholder.com/80x80?text=No+Image'}" alt="${product.title}" class="cart-item-image">
-            <div class="cart-item-details">
-              <h4 class="cart-item-title">${product.title}</h4>
-              <div class="cart-item-price">${formatPrice(product.price)} ₴ x ${quantity} = ${formatPrice(itemTotal)} ₴</div>
-              <div class="cart-item-actions">
-                <button class="btn" onclick="changeCartQuantity('${productId}', -1)">-</button>
-                <span>${quantity}</span>
-                <button class="btn" onclick="changeCartQuantity('${productId}', 1)">+</button>
-                <button class="btn" onclick="removeFromCart('${productId}')"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-    }
-    
-    modalContent.innerHTML = `
-      <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-      <h3>Кошик</h3>
-      <div class="cart-items">
-        ${cartItemsHTML}
-      </div>
-      <div class="cart-footer">
-        <div class="cart-total">Разом: ${formatPrice(total)} ₴</div>
-        <button class="btn btn-buy" onclick="checkout()">Оформити замовлення</button>
-      </div>
-    `;
-  }
-  
-  openModal();
-  
-  setTimeout(optimizeModalForMobile, 100);
-}
-
-// Зміна кількості товару в кошику
-function changeCartQuantity(productId, delta) {
-  if (!cart[productId] && delta < 1) return;
-  
-  cart[productId] += delta;
-  
-  if (cart[productId] < 1) {
-    delete cart[productId];
-  }
-  
-  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-  
-  updateCartCount();
-  openCart();
-}
-
-// Видалення товару з кошика
-function removeFromCart(productId) {
-  delete cart[productId];
-  
-  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-  
-  updateCartCount();
-  openCart();
-}
-
-// ===== ДОБАВЛЕНИЕ КОММЕНТАРИЕВ К ЗАКАЗАМ И ВОЗМОЖНОСТИ ОТМЕНЫ =====
-
-// В функции checkout() добавляем поле для комментария
-function checkout() {
-  if (!currentUser) {
-    closeModal();
-    openAuthModal();
-    showNotification("Для оформлення замовлення необхідно авторизуватися", "warning");
-    return;
-  }
-
-  const modalContent = document.getElementById("modal-content");
-  modalContent.innerHTML = `
-    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-    <h3>Оформлення замовлення</h3>
-    <form class="checkout-form" onsubmit="placeOrder(event)">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Ім'я та прізвище*</label>
-          <input type="text" id="order-name" required value="${currentUser.displayName || ''}">
-        </div>
-        <div class="form-group">
-          <label>Телефон*</label>
-          <input type="tel" id="order-phone" required placeholder="+380XXXXXXXXX">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Email*</label>
-        <input type="email" id="order-email" required value="${currentUser.email || ''}">
-      </div>
-      
-      <div class="delivery-section">
-        <h4>Доставка Новою Поштою</h4>
-        <div class="delivery-notice">
-          <i class="fas fa-info-circle"></i>
-          <p>Доставка здійснюється за тарифами перевізника. Вартість доставки розраховується окремо та оплачується при отриманні замовлення.</p>
-        </div>
-        <div class="form-group">
-          <label>Місто*</label>
-          <input type="text" id="np-city" required placeholder="Введіть ваше місто">
-        </div>
-        <div class="form-group">
-          <label>Відділення Нової Пошти*</label>
-          <input type="text" id="np-warehouse" required placeholder="Номер відділення">
-        </div>
-      </div>
-      
-      <div class="payment-section">
-        <h4>Спосіб оплати</h4>
-        <div class="payment-options">
-          <label class="payment-option">
-            <input type="radio" name="payment" value="cash" checked>
-            <span>Готівкою при отриманні</span>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="payment" value="card">
-            <span>Онлайн-оплата карткою</span>
-          </label>
-        </div>
-      </div>
-      
-      <!-- ДОБАВЛЕНО ПОЛЕ КОММЕНТАРИЯ -->
-      <div class="form-group">
-        <label>Коментар до замовлення (необов'язково)</label>
-        <textarea id="order-comment" placeholder="Ваші побажання щодо замовлення..." rows="3"></textarea>
-      </div>
-      
-      <div class="order-summary">
-        <h4>Ваше замовлення</h4>
-        <div class="order-items">
-          ${generateOrderSummary()}
-        </div>
-        <div class="order-total">
-          <div class="total-line">
-            <span>Сума замовлення:</span>
-            <span>${formatPrice(calculateCartTotal())} ₴</span>
-          </div>
-          <div class="total-line">
-            <span>Доставка:</span>
-            <span>Згідно тарифів перевізника</span>
-          </div>
-          <div class="total-line final-total">
-            <span>Разом:</span>
-            <span>${formatPrice(calculateCartTotal())} ₴</span>
-          </div>
-        </div>
-      </div>
-      
-      <button type="submit" class="btn btn-buy">Підтвердити замовлення</button>
-    </form>
-  `;
-  
-  openModal();
-  
-  setTimeout(optimizeModalForMobile, 100);
-}
-
-// В функции placeOrder() добавляем сохранение комментария
-function placeOrder(event) {
-  event.preventDefault();
-  
-  if (!currentUser || !currentUser.uid) {
-    closeModal();
-    openAuthModal();
-    showNotification("Для оформлення замовлення необхідно авторизуватися", "warning");
-    return;
-  }
-  
-  const name = document.getElementById('order-name').value.trim();
-  const phone = document.getElementById('order-phone').value.trim();
-  const email = document.getElementById('order-email').value.trim();
-  const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-  // ДОБАВЛЕНО: Получаем комментарий
-  const comment = document.getElementById('order-comment') ? document.getElementById('order-comment').value.trim() : '';
-  
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    showNotification("Введіть коректну email адресу", "error");
-    return;
-  }
-  
-  const phoneRegex = /^[\+]?[0-9]{10,15}$/;
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (!phoneRegex.test(cleanPhone)) {
-    showNotification("Введіть коректний номер телефону", "error");
-    return;
-  }
-  
-  const city = document.getElementById('np-city').value.trim();
-  const warehouse = document.getElementById('np-warehouse').value.trim();
-  
-  if (!city || !warehouse) {
-    showNotification('Заповніть всі поля для доставки Новою Поштою', 'error');
-    return;
-  }
-  
-  const deliveryDetails = { 
-    service: 'Нова Пошта', 
-    city, 
-    warehouse 
-  };
-  
-  if (!name || !phone || !email) {
-    showNotification('Заповніть всі обов\'язкові поля', 'error');
-    return;
-  }
-  
-  if (Object.keys(cart).length === 0) {
-    showNotification('Кошик порожній', 'error');
-    return;
-  }
-  
-  const order = {
-    userId: currentUser.uid,
-    userName: name,
-    userPhone: cleanPhone,
-    userEmail: email,
-    items: {...cart},
-    total: calculateCartTotal(),
-    delivery: deliveryDetails,
-    paymentMethod,
-    // ДОБАВЛЕНО: Сохраняем комментарий
-    comment: comment,
-    status: 'new',
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  
-  db.collection("orders").add(order)
-    .then((docRef) => {
-      cart = {};
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-      updateCartCount();
-      
-      sendOrderEmail(docRef.id, order);
-      
-      showNotification(`Замовлення успішно оформлено. Номер вашого замовлення: ${docRef.id}`);
-      closeModal();
-      showOrderConfirmation(docRef.id, order);
-    })
-    .catch(error => {
-      console.error("Помилка оформлення замовлення: ", error);
-      showNotification("Помилка оформлення замовлення", "error");
-    });
-}
-
-// Генерація підсумку замовлення
-function generateOrderSummary() {
-  let summaryHTML = '';
-  
-  for (const [productId, quantity] of Object.entries(cart)) {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      summaryHTML += `
-        <div class="order-item">
-          <span>${product.title} x${quantity}</span>
-          <span>${formatPrice(product.price * quantity)} ₴</span>
-        </div>
-      `;
-    }
-  }
-  
-  return summaryHTML;
-}
-
-// Розрахунок загальної вартості кошика
-function calculateCartTotal() {
-  return Object.entries(cart).reduce((sum, [productId, quantity]) => {
-    const product = products.find(p => p.id === productId);
-    return sum + (product ? product.price * quantity : 0);
-  }, 0);
-}
-
-// ===== ПОКАЗ ПІДТВЕРДЖЕННЯ ЗАКАЗА =====
-function showOrderConfirmation(orderId, order) {
-  const modalContent = document.getElementById("modal-content");
-  
-  // ДОБАВЛЕНО: Отображение комментария если он есть
-  const commentSection = order.comment ? `
-    <div class="comment-section" style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
-      <h4>Ваш коментар:</h4>
-      <p>"${order.comment}"</p>
-    </div>
-  ` : '';
-  
-  modalContent.innerHTML = `
-    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-    <div class="order-confirmation">
-      <div class="confirmation-header">
-        <i class="fas fa-check-circle"></i>
-        <h3>Замовлення успішно оформлено!</h3>
-      </div>
-      <div class="confirmation-details">
-        <p><strong>Номер замовлення:</strong> ${orderId}</p>
-        <p><strong>Ім'я:</strong> ${order.userName}</p>
-        <p><strong>Телефон:</strong> ${order.userPhone}</p>
-        <p><strong>Email:</strong> ${order.userEmail}</p>
-        <p><strong>Спосіб доставки:</strong> ${order.delivery.service}</p>
-        <div class="delivery-notice">
-          <i class="fas fa-info-circle"></i>
-          <p>Доставка здійснюється за тарифами перевізника. Вартість доставки розраховується окремо та оплачується при отриманні замовлення.</p>
-        </div>
-        <p><strong>Місто:</strong> ${order.delivery.city}</p>
-        <p><strong>Відділення:</strong> ${order.delivery.warehouse}</p>
-        <p><strong>Спосіб оплати:</strong> ${order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою'}</p>
-        <p><strong>Сума товарів:</strong> ${formatPrice(order.total)} ₴</p>
-        
-        ${commentSection}
-        
-        <div class="manager-notice" style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
-          <i class="fas fa-phone" style="color: #007bff; margin-right: 10px;"></i>
-          <strong>Наш менеджер зв'яжеться з вами протягом години для підтвердження замовлення та уточнення деталей.</strong>
-        </div>
-      </div>
-      <div class="confirmation-actions">
-        <button class="btn btn-detail" onclick="closeModal()">Продовжити покупки</button>
-        <button class="btn" onclick="viewOrders()">Мої замовлення</button>
-      </div>
-    </div>
-  `;
-  
-  openModal();
-}
-
-// Відкриття модального вікна
-function openModal() {
-  document.getElementById("modal").classList.add("active");
-}
-
-// Закриття модального вікна
-function closeModal() {
-  const modal = document.getElementById("modal");
-  modal.classList.remove("active");
-  modal.classList.remove("mobile-modal");
-  document.body.style.overflow = '';
-  
-  // Отписываемся от слушателя заказов
-  if (window.currentOrdersUnsubscribe) {
-    window.currentOrdersUnsubscribe();
-    window.currentOrdersUnsubscribe = null;
-  }
-}
-
-// Відкриття модального вікна авторизації
-function openAuthModal() {
-  const modalContent = document.getElementById("modal-content");
-  modalContent.innerHTML = `
-    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-    <h3>Вхід в систему</h3>
-    <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchAuthTab('login')">Вхід</div>
-      <div class="auth-tab" onclick="switchAuthTab('register')">Реєстрація</div>
-      <div class="auth-tab" onclick="switchAuthTab('admin')">Адміністратор</div>
-    </div>
-    <form id="login-form" onsubmit="login(event)">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" required>
-      </div>
-      <div class="form-group">
-        <label>Пароль</label>
-        <input type="password" required>
-      </div>
-      <button type="submit" class="btn btn-detail">Увійти</button>
-    </form>
-    <form id="register-form" style="display:none;" onsubmit="register(event)">
-      <div class="form-group">
-        <label>Ім'я</label>
-        <input type="text" required>
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" required>
-      </div>
-      <div class="form-group">
-        <label>Пароль</label>
-        <input type="password" required minlength="6">
-      </div>
-      <button type="submit" class="btn btn-detail">Зареєструватися</button>
-    </form>
-    <div id="admin-auth-form" style="display:none;">
-      <p>Для доступу до панелі адміністратора введіть пароль:</p>
-      <div class="form-group">
-        <label>Пароль адміністратора</label>
-        <input type="password" id="admin-password" required>
-      </div>
-      <button class="btn btn-admin" onclick="verifyAdminPassword()">Отримати права адміністратора</button>
-    </div>
-  `;
-  
-  openModal();
-  
-  setTimeout(optimizeModalForMobile, 100);
-}
-
-// Переключення вкладок авторизации
-function switchAuthTab(tab) {
-  const loginForm = document.getElementById("login-form");
-  const registerForm = document.getElementById("register-form");
-  const adminForm = document.getElementById("admin-auth-form");
-  const tabs = document.querySelectorAll(".auth-tab");
-  
-  tabs.forEach(tab => tab.classList.remove('active'));
-  
-  if (tab === 'login') {
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-    adminForm.style.display = 'none';
-    tabs[0].classList.add('active');
-  } else if (tab === 'register') {
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'block';
-    adminForm.style.display = 'none';
-    tabs[1].classList.add('active');
-  } else if (tab === 'admin') {
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'none';
-    adminForm.style.display = 'block';
-    tabs[2].classList.add('active');
-  }
-}
-
-// Вхід в систему
-function login(event) {
-  event.preventDefault();
-  const email = event.target.querySelector('input[type="email"]').value;
-  const password = event.target.querySelector('input[type="password"]').value;
-  
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      showNotification("Вхід виконано успішно");
-      closeModal();
-    })
-    .catch(error => {
-      let message = "Помилка входу";
-      switch (error.code) {
-        case 'auth/user-not-found':
-          message = "Користувач не знайдений";
-          break;
-        case 'auth/wrong-password':
-          message = "Невірний пароль";
-          break;
-      }
-      showNotification(message, "error");
-    });
-}
-
-// Реєстрація
-function register(event) {
-  event.preventDefault();
-  const name = event.target.querySelector('input[type="text"]').value;
-  const email = event.target.querySelector('input[type="email"]').value;
-  const password = event.target.querySelector('input[type="password"]').value;
-  
-  auth.createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      // Оновлюємо профіль користувача
-      return userCredential.user.updateProfile({
-        displayName: name
-      });
-    })
-    .then(() => {
-      showNotification("Реєстрація виконана успішно");
-      closeModal();
-    })
-    .catch(error => {
-      console.error("Помилка реєстрації: ", error);
-      showNotification("Помилка реєстрації: " + error.message, "error");
-    });
-}
-
-// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ПРОВЕРКИ ПАРОЛЯ АДМИНИСТРАТОРА =====
-function verifyAdminPassword() {
-  const password = document.getElementById("admin-password").value;
-  if (password === ADMIN_PASSWORD) {
     if (!currentUser) {
-      showNotification("Спочатку увійдіть в систему", "error");
-      switchAuthTab('login');
-      return;
-    }
-    
-    // Зберігаємо користувача як адміністратора в Firestore
-    const adminRef = db.collection("admins").doc(currentUser.uid);
-    adminRef.set({
-      email: currentUser.email,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      // Также сохраняем в localStorage для быстрого доступа в UI
-      const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
-      admins[currentUser.uid] = true;
-      localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
-      
-      document.getElementById("admin-panel").style.display = "block";
-      adminMode = true;
-      showNotification("Права адміністратора отримані");
-      closeModal();
-      
-      // Завантажуємо замовлення для адмін-панелі
-      loadAdminOrders();
-      
-      // Показуємо лічильник переглядів
-      document.getElementById("page-views-container").style.display = "block";
-      setupPageCounter();
-      
-      // Добавляем вкладку для модерации отзывов
-      addReviewsTabIfNotExists();
-    })
-    .catch((error) => {
-      console.error("Помилка збереження прав адміністратора: ", error);
-      showNotification("Помилка збереження прав адміністратора", "error");
-    });
-  } else {
-    showNotification("Невірний пароль адміністратора", "error");
-  }
-}
-
-// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ВВОДА ПАРОЛЯ АДМИНИСТРАТОРА =====
-function promptAdminPassword() {
-  const password = prompt("Введіть пароль адміністратора:");
-  if (password === ADMIN_PASSWORD) {
-    if (!currentUser) {
-      showNotification("Спочатку увійдіть в систему", "error");
-      openAuthModal();
-      return;
-    }
-    
-    // Зберігаємо користувача як адміністратора в Firestore
-    const adminRef = db.collection("admins").doc(currentUser.uid);
-    adminRef.set({
-      email: currentUser.email,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      // Также сохраняем в localStorage для быстрого доступа в UI
-      const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
-      admins[currentUser.uid] = true;
-      localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
-      
-      document.getElementById("admin-panel").style.display = "block";
-      adminMode = true;
-      showNotification("Права адміністратора отримані");
-      
-      // Завантажуємо замовлення для адмін-панелі
-      loadAdminOrders();
-      
-      // Показуємо лічильник переглядів
-      document.getElementById("page-views-container").style.display = "block";
-      setupPageCounter();
-      
-      // Добавляем вкладку для модерации отзывов
-      addReviewsTabIfNotExists();
-    })
-    .catch((error) => {
-      console.error("Помилка збереження прав адміністратора: ", error);
-      showNotification("Помилка збереження прав адміністратора", "error");
-    });
-  } else if (password) {
-    showNotification("Невірний пароль адміністратора", "error");
-  }
-}
-
-// Перевірка статусу адміністратора
-function checkAdminStatus(userId) {
-  db.collection("admins").doc(userId).get()
-    .then((doc) => {
-      if (doc.exists) {
-        document.getElementById("admin-panel").style.display = "block";
-        adminMode = true;
-        loadAdminOrders();
-        
-        // Показуємо лічильник переглядів
-        document.getElementById("page-views-container").style.display = "block";
-        setupPageCounter();
-        
-        // Добавляем вкладку для модерации отзывов
-        addReviewsTabIfNotExists();
-      }
-    })
-    .catch((error) => {
-      console.error("Помилка перевірки прав адміністратора: ", error);
-    });
-}
-
-// Вихід з системи
-function logout() {
-  // Не видаляємо права адміністратора при виході, щоб не вводити пароль кожного разу
-  auth.signOut()
-    .then(() => {
-      showNotification("Вихід виконано успішно");
-    })
-    .catch(error => {
-      console.error("Помилка виходу: ", error);
-      showNotification("Помилка виходу", "error");
-    });
-}
-
-// Переключення вкладок в адмін-панелі
-function switchTab(tabId) {
-  const tabs = document.querySelectorAll(".tab");
-  const tabContents = document.querySelectorAll(".tab-content");
-  
-  tabs.forEach(tab => tab.classList.remove("active"));
-  tabContents.forEach(content => content.classList.remove("active"));
-  
-  document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add("active");
-  document.getElementById(tabId).classList.add("active");
-  
-  // Якщо переключилися на вкладку товарів, завантажуємо їх
-  if (tabId === 'products-tab') {
-    loadAdminProducts();
-  }
-  
-  // Якщо переключилися на вкладку замовлень, завантажуємо їх
-  if (tabId === 'orders-tab') {
-    loadAdminOrders();
-  }
-  
-  // Если переключились на вкладку отзывов, загружаем их
-  if (tabId === 'reviews-tab-content') {
-    loadReviewsForModeration();
-  }
-}
-
-// ===== ЗАВАНТАЖЕННЯ ЗАМОВЛЕНЬ В АДМІН-ПАНЕЛІ =====
-function loadAdminOrders() {
-  const ordersList = document.getElementById("admin-orders-list");
-  ordersList.innerHTML = '<p>Завантаження замовлень...</p>';
-  
-  // Слухаємо оновлення в реальному часі
-  db.collection("orders")
-    .orderBy("createdAt", "desc")
-    .onSnapshot((querySnapshot) => {
-      if (querySnapshot.empty) {
-        ordersList.innerHTML = '<p>Замовлень немає</p>';
+        showNotification("Увійдіть, щоб залишити відгук", "warning");
         return;
-      }
-      
-      ordersList.innerHTML = '';
-      
-      querySnapshot.forEach((doc) => {
-        const order = { id: doc.id, ...doc.data() };
-        const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
+    }
+    
+    if (currentRating === 0) {
+        showNotification("Будь ласка, оберіть рейтинг", "warning");
+        return;
+    }
+    
+    const text = document.getElementById('review-text').value;
+    
+    const newReview = {
+        productId,
+        userId: currentUser.uid,
+        userName: currentUser.displayName || currentUser.email,
+        rating: currentRating,
+        text,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        approved: false
+    };
+    
+    db.collection("reviews").add(newReview)
+        .then(() => {
+            showNotification("Відгук додано і відправиться на модерацію");
+            document.getElementById('review-text').value = "";
+            currentRating = 0;
+            updateRatingStars();
+            loadReviews(productId);
+        })
+        .catch((error) => {
+            console.error("Помилка додавання відгуку: ", error);
+            showNotification("Помилка додавання відгуку", "error");
+        });
+}
+
+// ===== ОБНОВЛЕННАЯ ФУНКЦИЯ ДОБАВЛЕНИЯ В КОРЗИНУ С КОММЕНТАРИЕМ =====
+function addToCartWithQuantity(productId) {
+    const quantity = parseInt(document.getElementById("product-quantity").value) || 1;
+    const comment = document.getElementById("product-comment")?.value.trim() || '';
+    
+    if (!cart[productId]) {
+        cart[productId] = { quantity: 0, comment: '' };
+    }
+    cart[productId].quantity += quantity;
+    
+    // Сохраняем комментарий (если товар уже был в корзине, комментарий обновится)
+    if (comment) {
+        cart[productId].comment = comment;
+    }
+    
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    
+    updateCartCount();
+    showNotification("Товар додано до кошика");
+    closeModal();
+}
+
+function changeQuantity(delta) {
+    const input = document.getElementById("product-quantity");
+    let value = parseInt(input.value) || 1;
+    value += delta;
+    
+    if (value < 1) value = 1;
+    
+    input.value = value;
+}
+
+// ===== КОРЗИНА И ОФОРМЛЕНИЕ ЗАКАЗА =====
+
+// ===== ОБНОВЛЕННАЯ ФУНКЦИЯ ОТКРЫТИЯ КОРЗИНЫ С УЧЕТОМ КОММЕНТАРИЕВ =====
+function openCart() {
+    const modalContent = document.getElementById("modal-content");
+    
+    if (Object.keys(cart).length === 0) {
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
+            <h3>Кошик</h3>
+            <div class="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <h3>Кошик порожній</h3>
+                <p>Додайте товари з каталогу</p>
+            </div>
+        `;
+    } else {
+        let total = 0;
+        let cartItemsHTML = '';
         
-        // Визначаємо статус замовлення
-        let statusClass = 'status-new';
-        let statusText = 'Новий';
-        
-        if (order.status === 'processing') {
-          statusClass = 'status-processing';
-          statusText = 'В обробці';
-        } else if (order.status === 'shipped') {
-          statusClass = 'status-shipped';
-          statusText = 'Відправлено';
-        } else if (order.status === 'delivered') {
-          statusClass = 'status-delivered';
-          statusText = 'Доставлено';
-        } else if (order.status === 'cancelled') {
-          statusClass = 'status-cancelled';
-          statusText = 'Скасовано';
+        for (const [productId, item] of Object.entries(cart)) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                const quantity = item.quantity;
+                const comment = item.comment || '';
+                const itemTotal = product.price * quantity;
+                total += itemTotal;
+                
+                cartItemsHTML += `
+                    <div class="cart-item">
+                        <img src="${product.image || 'https://via.placeholder.com/80x80?text=Fashion'}" alt="${product.title}" class="cart-item-image">
+                        <div class="cart-item-details">
+                            <h4 class="cart-item-title">${product.title}</h4>
+                            <div class="cart-item-price">${formatPrice(product.price)} ₴ x ${quantity} = ${formatPrice(itemTotal)} ₴</div>
+                            ${comment ? `
+                                <div class="cart-item-comment">
+                                    <strong>Ваш коментар:</strong> ${comment}
+                                </div>
+                            ` : ''}
+                            <div class="cart-item-actions">
+                                <button class="btn" onclick="changeCartQuantity('${productId}', -1)">-</button>
+                                <span>${quantity}</span>
+                                <button class="btn" onclick="changeCartQuantity('${productId}', 1)">+</button>
+                                <button class="btn" onclick="removeFromCart('${productId}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
         }
         
-        const orderElement = document.createElement('div');
-        orderElement.className = 'admin-order-item';
-        orderElement.innerHTML = `
-          <div class="order-header">
-            <h4>Замовлення #${order.id}</h4>
-            <span class="order-date">${orderDate}</span>
-          </div>
-          <div class="order-info">
-            <p><strong>Клієнт:</strong> ${order.userName} (${order.userEmail}, ${order.userPhone})</p>
-            ${order.comment ? `<p><strong>Коментар:</strong> ${order.comment}</p>` : ''}
-            <p><strong>Сума:</strong> ${formatPrice(order.total)} ₴</p>
-            <p><strong>Доставка:</strong> ${order.delivery.service}</p>
-            <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
-            ${order.ttn ? `<p><strong>ТТН:</strong> ${order.ttn}</p>` : ''}
-          </div>
-          <div class="admin-order-actions">
-            <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">Деталі</button>
-            <select onchange="changeOrderStatus('${order.id}', this.value)">
-              <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новий</option>
-              <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>В обробці</option>
-              <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Відправлено</option>
-              <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Доставлено</option>
-              <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Скасовано</option>
-            </select>
-            <button class="btn" onclick="addTTNToOrder('${order.id}')">ТТН</button>
-            <button class="btn btn-danger" onclick="deleteOrder('${order.id}')">Видалити</button>
-          </div>
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
+            <h3>Кошик</h3>
+            <div class="cart-items">
+                ${cartItemsHTML}
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">Разом: ${formatPrice(total)} ₴</div>
+                <button class="btn btn-buy" onclick="checkout()">Оформити замовлення</button>
+            </div>
         `;
-        
-        ordersList.appendChild(orderElement);
-      });
-    }, (error) => {
-      console.error("Помилка завантаження замовлень: ", error);
-      ordersList.innerHTML = '<p>Помилка завантаження замовлень</p>';
-    });
+    }
+    
+    openModal();
 }
 
-// ===== ФУНКЦІЯ ДОДАВАННЯ ТТН ДО ЗАМОВЛЕННЯ =====
-function addTTNToOrder(orderId) {
-  const ttn = prompt('Введіть ТТН (трек-номер) для цього замовлення:');
-  
-  if (ttn && ttn.trim() !== '') {
-    db.collection("orders").doc(orderId).update({
-      ttn: ttn.trim(),
-      ttnAddedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      showNotification("ТТН успішно додано до замовлення");
-      
-      // Отправляем email с уведомлением о ТТН
-      db.collection("orders").doc(orderId).get()
-        .then((doc) => {
-          if (doc.exists) {
-            const order = { id: doc.id, ...doc.data() };
-            sendTTNEmail(orderId, order);
-          }
-        });
-      
-      // Обновляем список заказов
-      loadAdminOrders();
-    })
-    .catch((error) => {
-      console.error("Помилка додавання ТТН: ", error);
-      showNotification("Помилка додавання ТТН", "error");
-    });
-  }
+function changeCartQuantity(productId, delta) {
+    if (!cart[productId] && delta < 1) return;
+    
+    cart[productId].quantity += delta;
+    
+    if (cart[productId].quantity < 1) {
+        delete cart[productId];
+    }
+    
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    
+    updateCartCount();
+    openCart();
 }
 
-// ===== ФУНКЦІЯ ВІДПРАВКИ EMAIL ПРО ТТН =====
-function sendTTNEmail(orderId, order) {
-  if (!order.ttn) return;
-  
-  const templateParams = {
-    to_email: order.userEmail,
-    order_id: orderId,
-    customer_name: order.userName,
-    ttn_number: order.ttn,
-    delivery_service: order.delivery.service,
-    delivery_city: order.delivery.city,
-    delivery_warehouse: order.delivery.warehouse,
-    tracking_url: `https://tracking.novaposhta.ua/#/uk/search/${order.ttn}`
-  };
-
-  // Используем другой шаблон для уведомления о ТТН
-  emailjs.send(EMAILJS_SERVICE_ID, "template_ttn_notification", templateParams)
-    .then(function(response) {
-      console.log('Email с ТТН успешно отправлен!', response.status, response.text);
-    }, function(error) {
-      console.error('Ошибка отправки email с ТТН:', error);
-    });
+function removeFromCart(productId) {
+    delete cart[productId];
+    
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    
+    updateCartCount();
+    openCart();
 }
 
-// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ СТАТУСОВ =====
-function getStatusClass(status) {
-  const statusClasses = {
-    'new': 'status-new',
-    'processing': 'status-processing',
-    'shipped': 'status-shipped',
-    'delivered': 'status-delivered',
-    'cancelled': 'status-cancelled'
-  };
-  return statusClasses[status] || 'status-new';
-}
-
-function getStatusText(status) {
-  const statusTexts = {
-    'new': 'Новий',
-    'processing': 'В обробці',
-    'shipped': 'Відправлено',
-    'delivered': 'Доставлено',
-    'cancelled': 'Скасовано'
-  };
-  return statusTexts[status] || 'Новий';
-}
-
-// ===== ЗМІНА СТАТУСУ ЗАМОВЛЕННЯ =====
-function changeOrderStatus(orderId, status) {
-  db.collection("orders").doc(orderId).update({
-    status,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  })
-  .then(() => {
-    showNotification("Статус замовлення оновлено");
-  })
-  .catch((error) => {
-    console.error("Помилка оновлення статусу замовлення: ", error);
-    showNotification("Помилка оновлення статусу замовлення", "error");
-  });
-}
-
-// ===== ВИДАЛЕННЯ ЗАМОВЛЕННЯ =====
-function deleteOrder(orderId) {
-  if (confirm("Ви впевнені, що хочете видалити це замовлення? Цю дію не можна скасувати.")) {
-    db.collection("orders").doc(orderId).delete()
-      .then(() => {
-        showNotification("Замовлення успішно видалено");
-      })
-      .catch((error) => {
-        console.error("Помилка видалення замовлення: ", error);
-        showNotification("Помилка видалення замовлення", "error");
-      });
-  }
-}
-
-// ===== ПЕРЕГЛЯД ДЕТАЛЕЙ ЗАМОВЛЕННЯ =====
-function viewOrderDetails(orderId) {
-  db.collection("orders").doc(orderId).get()
-    .then((doc) => {
-      if (!doc.exists) {
-        showNotification("Замовлення не знайдено", "error");
+function checkout() {
+    if (!currentUser) {
+        closeModal();
+        openAuthModal();
+        showNotification("Для оформлення замовлення необхідно авторизуватися", "warning");
         return;
-      }
-      
-      const order = { id: doc.id, ...doc.data() };
-      const modalContent = document.getElementById("modal-content");
-      
-      let itemsHTML = '';
-      for (const [productId, quantity] of Object.entries(order.items)) {
+    }
+
+    // Проверка, что корзина не пуста
+    if (Object.keys(cart).length === 0) {
+        showNotification("Кошик порожній", "error");
+        return;
+    }
+
+    const modalContent = document.getElementById("modal-content");
+    modalContent.innerHTML = `
+        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <h3>Оформлення замовлення</h3>
+        <form class="checkout-form" onsubmit="placeOrder(event)">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ім'я та прізвище*</label>
+                    <input type="text" id="order-name" required value="${currentUser.displayName || ''}">
+                </div>
+                <div class="form-group">
+                    <label>Телефон*</label>
+                    <input type="tel" id="order-phone" required placeholder="+380XXXXXXXXX">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email*</label>
+                <input type="email" id="order-email" required value="${currentUser.email || ''}">
+            </div>
+            
+            <!-- ДОБАВЛЕНО: ПОЛЕ КОММЕНТАРИЯ -->
+            <div class="form-group">
+                <label>Коментар до замовлення (необов'язково)</label>
+                <textarea 
+                    id="order-comment" 
+                    placeholder="Ваші побажання щодо замовлення, коментарі або особливі умови доставки..."
+                    rows="3"
+                    maxlength="500"
+                ></textarea>
+                <div class="char-counter" style="text-align: right; font-size: 0.8em; color: #666;">
+                    <span id="comment-chars">0</span>/500 символів
+                </div>
+            </div>
+            
+            <div class="delivery-section">
+                <h4>Спосіб доставки</h4>
+                <div class="delivery-options">
+                    <label class="delivery-option">
+                        <input type="radio" name="delivery" value="nova-poshta" checked onchange="toggleDeliveryFields()">
+                        <span>Нова Пошта</span>
+                    </label>
+                    <label class="delivery-option">
+                        <input type="radio" name="delivery" value="ukr-poshta" onchange="toggleDeliveryFields()">
+                        <span>Укрпошта</span>
+                    </label>
+                </div>
+                
+                <div id="nova-poshta-fields" class="delivery-fields">
+                    <div class="delivery-notice">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Доставка здійснюється за тарифами перевізника. Вартість доставки розраховується окремо та оплачується при отриманні замовлення.</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Місто*</label>
+                        <input type="text" id="np-city" required placeholder="Введіть ваше місто">
+                    </div>
+                    <div class="form-group">
+                        <label>Відділення Нової Пошти*</label>
+                        <input type="text" id="np-warehouse" required placeholder="Номер відділення">
+                    </div>
+                </div>
+                
+                <div id="ukr-poshta-fields" class="delivery-fields" style="display: none;">
+                    <div class="delivery-notice">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Доставка здійснюється за тарифами Укрпошти. Вартість доставки розраховується окремо та оплачується при отриманні замовлення.</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Місто*</label>
+                        <input type="text" id="up-city" required placeholder="Введіть ваше місто">
+                    </div>
+                    <div class="form-group">
+                        <label>Відділення Укрпошти*</label>
+                        <input type="text" id="up-warehouse" required placeholder="Номер відділення">
+                    </div>
+                    <div class="form-group">
+                        <label>Поштовий індекс*</label>
+                        <input type="text" id="up-index" required placeholder="01001" pattern="[0-9]{5}" maxlength="5">
+                        <small class="form-hint">5 цифр, наприклад: 01001</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Адреса для кур'єрської доставки (опційно)</label>
+                        <input type="text" id="up-address" placeholder="Вулиця, будинок, квартира">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="payment-section">
+                <h4>Спосіб оплати</h4>
+                <div class="payment-options">
+                    <label class="payment-option">
+                        <input type="radio" name="payment" value="cash" checked>
+                        <span>Готівкою при отриманні</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="order-summary">
+                <h4>Ваше замовлення</h4>
+                <div class="order-items">
+                    ${generateOrderSummary()}
+                </div>
+                <div class="order-total">
+                    <div class="total-line">
+                        <span>Сума замовлення:</span>
+                        <span>${formatPrice(calculateCartTotal())} ₴</span>
+                    </div>
+                    <div class="total-line">
+                        <span>Доставка:</span>
+                        <span>Згідно тарифів перевізника</span>
+                    </div>
+                    <div class="total-line final-total">
+                        <span>Разом:</span>
+                        <span>${formatPrice(calculateCartTotal())} ₴</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-buy">Підтвердити замовлення</button>
+        </form>
+    `;
+    
+    openModal();
+    
+    // Добавляем обработчик для подсчета символов в комментарии
+    const commentField = document.getElementById('order-comment');
+    const charCounter = document.getElementById('comment-chars');
+    
+    if (commentField && charCounter) {
+        commentField.addEventListener('input', function() {
+            const length = this.value.length;
+            charCounter.textContent = length;
+            
+            if (length > 450) {
+                charCounter.style.color = '#e74c3c';
+            } else if (length > 400) {
+                charCounter.style.color = '#f39c12';
+            } else {
+                charCounter.style.color = '#666';
+            }
+        });
+    }
+    
+    // Гарантируем правильное отображение полей доставки при открытии формы
+    toggleDeliveryFields();
+}
+
+// Функция переключения полей доставки
+function toggleDeliveryFields() {
+    const deliveryMethod = document.querySelector('input[name="delivery"]:checked');
+    
+    if (!deliveryMethod) return;
+    
+    const deliveryValue = deliveryMethod.value;
+    const npFields = document.getElementById('nova-poshta-fields');
+    const upFields = document.getElementById('ukr-poshta-fields');
+    
+    if (!npFields || !upFields) return;
+    
+    // Гарантированно показываем/скрываем поля
+    if (deliveryValue === 'nova-poshta') {
+        npFields.style.display = 'block';
+        upFields.style.display = 'none';
+        
+        // Делаем поля Новой Почты обязательными
+        document.getElementById('np-city').required = true;
+        document.getElementById('np-warehouse').required = true;
+        
+        // Убираем обязательность полей Укрпочты
+        document.getElementById('up-city').required = false;
+        document.getElementById('up-warehouse').required = false;
+        document.getElementById('up-index').required = false;
+    } else {
+        npFields.style.display = 'none';
+        upFields.style.display = 'block';
+        
+        // Убираем обязательность полей Новой Почты
+        document.getElementById('np-city').required = false;
+        document.getElementById('np-warehouse').required = false;
+        
+        // Делаем поля Укрпочты обязательными
+        document.getElementById('up-city').required = true;
+        document.getElementById('up-warehouse').required = true;
+        document.getElementById('up-index').required = true;
+    }
+}
+
+function placeOrder(event) {
+    event.preventDefault();
+    
+    // ГАРАНТОВАНО викликаємо перемикання полів доставки перед отриманням значень
+    toggleDeliveryFields();
+    
+    if (!currentUser || !currentUser.uid) {
+        closeModal();
+        openAuthModal();
+        showNotification("Для оформлення замовлення необхідно авторизуватися", "warning");
+        return;
+    }
+    
+    const name = document.getElementById('order-name').value.trim();
+    const phone = document.getElementById('order-phone').value.trim();
+    const email = document.getElementById('order-email').value.trim();
+    const comment = document.getElementById('order-comment')?.value.trim() || ''; // ДОБАВЛЕНО: получаем комментарий
+    const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+    const deliveryMethod = document.querySelector('input[name="delivery"]:checked').value;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showNotification("Введіть коректну email адресу", "error");
+        return;
+    }
+    
+    const phoneRegex = /^[\+]?[0-9]{10,15}$/;
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (!phoneRegex.test(cleanPhone)) {
+        showNotification("Введіть коректний номер телефону", "error");
+        return;
+    }
+    
+    let deliveryDetails = {};
+    
+    if (deliveryMethod === 'nova-poshta') {
+        const city = document.getElementById('np-city').value.trim();
+        const warehouse = document.getElementById('np-warehouse').value.trim();
+        
+        if (!city || !warehouse) {
+            showNotification('Заповніть всі поля для доставки Новою Поштою', 'error');
+            return;
+        }
+        
+        deliveryDetails = { 
+            service: 'Нова Пошта', 
+            city, 
+            warehouse 
+        };
+    } else {
+        // Исправлено: гарантированно получаем поля для Укрпочты
+        const city = document.getElementById('up-city').value.trim();
+        const warehouse = document.getElementById('up-warehouse').value.trim();
+        const index = document.getElementById('up-index').value.trim();
+        const address = document.getElementById('up-address').value.trim();
+        
+        if (!city || !warehouse || !index) {
+            showNotification('Заповніть всі обов\'язкові поля для доставки Укрпоштою', 'error');
+            return;
+        }
+        
+        // Валидация индекса
+        const indexRegex = /^\d{5}$/;
+        if (!indexRegex.test(index)) {
+            showNotification('Введіть коректний поштовий індекс (5 цифр)', 'error');
+            return;
+        }
+        
+        deliveryDetails = { 
+            service: 'Укрпошта', 
+            city, 
+            warehouse,
+            index,
+            address: address || ''
+        };
+    }
+    
+    if (!name || !phone || !email) {
+        showNotification('Заповніть всі обов\'язкові поля', 'error');
+        return;
+    }
+    
+    if (Object.keys(cart).length === 0) {
+        showNotification('Кошик порожній', 'error');
+        return;
+    }
+    
+    const order = {
+        userId: currentUser.uid,
+        userName: name,
+        userPhone: cleanPhone,
+        userEmail: email,
+        comment: comment, // ДОБАВЛЕНО: сохраняем комментарий в заказе
+        items: {...cart},
+        total: calculateCartTotal(),
+        delivery: deliveryDetails,
+        paymentMethod,
+        status: 'new',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    db.collection("orders").add(order)
+        .then((docRef) => {
+            cart = {};
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+            updateCartCount();
+            
+            sendOrderEmail(docRef.id, order);
+            
+            showNotification(`Замовлення успішно оформлено. Номер вашого замовлення: ${docRef.id}`);
+            closeModal();
+            showOrderConfirmation(docRef.id, order);
+        })
+        .catch(error => {
+            console.error("Помилка оформлення замовлення: ", error);
+            showNotification("Помилка оформлення замовлення", "error");
+        });
+}
+
+function sendOrderEmail(orderId, order) {
+    let itemsList = '';
+    for (const [productId, item] of Object.entries(order.items)) {
         const product = products.find(p => p.id === productId);
         if (product) {
-          itemsHTML += `
-            <div class="cart-item">
-              <img src="${product.image || 'https://via.placeholder.com/80x80?text=No+Image'}" alt="${product.title}" class="cart-item-image">
-              <div class="cart-item-details">
-                <h4 class="cart-item-title">${product.title}</h4>
-                <div class="cart-item-price">${formatPrice(product.price)} ₴ x ${quantity} = ${formatPrice(product.price * quantity)} ₴</div>
-              </div>
-            </div>
-          `;
+            const quantity = item.quantity;
+            const comment = item.comment || '';
+            itemsList += `
+                <tr>
+                    <td>${product.title}</td>
+                    <td>${quantity}</td>
+                    <td>${formatPrice(product.price)} ₴</td>
+                    <td>${formatPrice(product.price * quantity)} ₴</td>
+                </tr>
+                ${comment ? `
+                <tr>
+                    <td colspan="4" style="background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6;">
+                        <strong>Коментар:</strong> ${comment}
+                    </td>
+                </tr>
+                ` : ''}
+            `;
         }
-      }
-      
-      const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
-      const updatedDate = order.updatedAt ? order.updatedAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
-      const ttnDate = order.ttnAddedAt ? order.ttnAddedAt.toDate().toLocaleString('uk-UA') : '';
-      
-      // ДОБАВЛЕНО: Секция комментария
-      const commentSection = order.comment ? `
-        <div class="comment-section" style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
-          <h4>Коментар клієнта:</h4>
-          <p>"${order.comment}"</p>
-        </div>
-      ` : '';
-      
-      const ttnSection = order.ttn ? `
-        <div class="ttn-section" style="margin: 1rem 0; padding: 1rem; background: #f0f8ff; border-radius: 8px; border-left: 4px solid #007bff;">
-          <h4>Інформація про відправлення</h4>
-          <p><strong>ТТН (трек-номер):</strong> ${order.ttn}</p>
-          <p><strong>Дата додавання ТТН:</strong> ${ttnDate}</p>
-          <p><strong>Служба доставки:</strong> Нова Пошта</p>
-          <p><a href="https://tracking.novaposhta.ua/#/uk/search/${order.ttn}" target="_blank" style="color: #007bff; text-decoration: none;">
-            <i class="fas fa-external-link-alt"></i> Відстежити посилку
-          </a></p>
-        </div>
-      ` : `
-        <div class="ttn-section" style="margin: 1rem 0; padding: 1rem; background: #fff3cd; border-radius: 8px; border-left: 4px solid #ffc107;">
-          <p><i class="fas fa-info-circle"></i> ТТН ще не додано до цього замовлення</p>
-        </div>
-      `;
-      
-      const ttnButton = adminMode ? `
-        <div style="margin: 1rem 0;">
-          <button class="btn btn-detail" onclick="addTTNToOrder('${order.id}')">
-            <i class="fas fa-truck"></i> ${order.ttn ? 'Змінити ТТН' : 'Додати ТТН'}
-          </button>
-        </div>
-      ` : '';
-      
-      // ДОБАВЛЕНО: Улучшенная кнопка отмены заказа
-      const cancelButton = !adminMode && order.status === 'new' ? `
-        <div style="margin: 1rem 0;">
-          <button class="btn btn-danger" onclick="cancelOrder('${order.id}')" style="background: #e74c3c; color: white; padding: 10px 20px;">
-            <i class="fas fa-times"></i> Скасувати замовлення
-          </button>
-          <p style="font-size: 0.9em; color: #666; margin-top: 5px;">
-            Ви можете скасувати замовлення, доки воно не передане в обробку
-          </p>
-        </div>
-      ` : '';
-      
-      modalContent.innerHTML = `
-        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-        <h3>Деталі замовлення #${order.id}</h3>
-        <div class="order-details">
-          ${ttnSection}
-          ${ttnButton}
-          ${cancelButton}
-          ${commentSection}
-          
-          <div class="customer-info">
-            <h4>Інформація про клієнта</h4>
-            <p><strong>Ім'я:</strong> ${order.userName}</p>
-            <p><strong>Email:</strong> ${order.userEmail}</p>
-            <p><strong>Телефон:</strong> ${order.userPhone}</p>
-          </div>
-          
-          <div class="order-meta">
-            <h4>Інформація про замовлення</h4>
-            <p><strong>Дата створення:</strong> ${orderDate}</p>
-            <p><strong>Дата оновлення:</strong> ${updatedDate}</p>
-            <p><strong>Спосіб оплати:</strong> ${order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою'}</p>
-            <p><strong>Статус:</strong> <span class="order-status ${getStatusClass(order.status)}">${getStatusText(order.status)}</span></p>
-          </div>
-          
-          <div class="delivery-info">
-            <h4>Доставка</h4>
-            <p><strong>Служба:</strong> ${order.delivery.service}</p>
-            ${order.delivery.city ? `<p><strong>Місто:</strong> ${order.delivery.city}</p>` : ''}
-            ${order.delivery.warehouse ? `<p><strong>Відділення:</strong> ${order.delivery.warehouse}</p>` : ''}
-            ${order.delivery.address ? `<p><strong>Адреса:</strong> ${order.delivery.address}</p>` : ''}
-          </div>
-          
-          <div class="order-items">
-            <h4>Товари</h4>
-            ${itemsHTML}
-          </div>
-          
-          <div class="order-total">
-            <h4>Разом: ${formatPrice(order.total)} ₴</h4>
-          </div>
-        </div>
-      `;
-      
-      openModal();
-      optimizeModalForMobile();
-    })
-    .catch((error) => {
-      console.error("Помилка завантаження деталей замовлення: ", error);
-      showNotification("Помилка завантаження деталей замовлення", "error");
-    });
-}
-
-// ===== ЗАГРУЗКА ОТЗЫВОВ ДЛЯ МОДЕРАЦИИ =====
-function loadReviewsForModeration() {
-  const reviewsContainer = document.getElementById("reviews-moderation-container");
-  if (!reviewsContainer) return;
-  
-  reviewsContainer.innerHTML = "<p>Завантаження відгуків для модерації...</p>";
-  
-  db.collection("reviews")
-    .where("approved", "==", false)
-    .orderBy("createdAt", "desc")
-    .get()
-    .then((querySnapshot) => {
-      if (querySnapshot.empty) {
-        reviewsContainer.innerHTML = "<p>Немає відгуків для модерації</p>";
-        return;
-      }
-      
-      let reviewsHTML = "";
-      querySnapshot.forEach((doc) => {
-        const review = { id: doc.id, ...doc.data() };
-        const reviewDate = review.createdAt ? review.createdAt.toDate().toLocaleDateString('uk-UA') : '';
-        
-        const product = products.find(p => p.id === review.productId);
-        const productName = product ? product.title : review.productId;
-        
-        reviewsHTML += `
-          <div class="moderation-review-item">
-            <h4>Відгук на товар: ${productName}</h4>
-            <p><strong>Від:</strong> ${review.userName}</p>
-            <div class="review-rating">${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}</div>
-            <p><strong>Дата:</strong> ${reviewDate}</p>
-            <p>${review.text}</p>
-            <div class="moderation-actions">
-              <button class="btn btn-success" onclick="approveReview('${doc.id}')">Затвердити</button>
-              <button class="btn btn-danger" onclick="deleteReview('${doc.id}')">Видалити</button>
-            </div>
-          </div>
-        `;
-      });
-      
-      reviewsContainer.innerHTML = reviewsHTML;
-    })
-    .catch((error) => {
-      console.error("Помилка завантаження відгуків для модерації: ", error);
-      reviewsContainer.innerHTML = "<p>Помилка завантаження відгуків</p>";
-    });
-}
-
-// ===== ОДОБРЕНИЕ ОТЗЫВА =====
-function approveReview(reviewId) {
-  db.collection("reviews").doc(reviewId).update({
-    approved: true,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  })
-  .then(() => {
-    showNotification("Відгук затверджено");
-    loadReviewsForModeration();
-  })
-  .catch((error) => {
-    console.error("Помилка затвердження відгуку: ", error);
-    showNotification("Помилка затвердження відгуку", "error");
-  });
-}
-
-// ===== УДАЛЕНИЕ ОТЗЫВА =====
-function deleteReview(reviewId) {
-  if (confirm("Ви впевнені, що хочете видалити цей відгук? Цю дію не можна скасувати.")) {
-    db.collection("reviews").doc(reviewId).delete()
-      .then(() => {
-        showNotification("Відгук успішно видалено");
-        loadReviewsForModeration();
-      })
-      .catch((error) => {
-        console.error("Помилка видалення відгуку: ", error);
-        showNotification("Помилка видалення відгуку", "error");
-      });
-  }
-}
-
-// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ОТМЕНЫ ЗАКАЗА =====
-function cancelOrder(orderId) {
-    if (!currentUser) {
-        showNotification("Увійдіть в систему для скасування замовлення", "warning");
-        return;
     }
     
-    if (!confirm("Ви впевнені, що хочете скасувати це замовлення?")) {
-        return;
+    // ДОБАВЛЕНО: информация о комментарии в email
+    const commentInfo = order.comment ? `
+        <tr>
+            <td colspan="4" style="background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6;">
+                <strong>Коментар клієнта до замовлення:</strong><br>
+                ${order.comment}
+            </td>
+        </tr>
+    ` : '';
+    
+    const templateParams = {
+        to_email: "korovinkonstantin0@gmail.com",
+        order_id: orderId,
+        customer_name: order.userName,
+        customer_email: order.userEmail,
+        customer_phone: order.userPhone,
+        customer_comment: order.comment || 'Не вказано', // ДОБАВЛЕНО
+        delivery_service: order.delivery.service,
+        delivery_city: order.delivery.city,
+        delivery_warehouse: order.delivery.warehouse,
+        delivery_index: order.delivery.index || '',
+        payment_method: order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою',
+        total_amount: formatPrice(order.total),
+        items: itemsList + commentInfo, // ДОБАВЛЕНО комментарий в список товаров
+        order_date: new Date().toLocaleString('uk-UA')
+    };
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+        .then(function(response) {
+            console.log('Email успешно отправлен!', response.status, response.text);
+        }, function(error) {
+            console.error('Ошибка отправки email:', error);
+        });
+}
+
+// ===== ОБНОВЛЕННАЯ ФУНКЦИЯ ГЕНЕРАЦИИ СВОДКИ ЗАКАЗА С УЧЕТОМ КОММЕНТАРИЕВ =====
+function generateOrderSummary() {
+    let summaryHTML = '';
+    
+    for (const [productId, item] of Object.entries(cart)) {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+            const quantity = item.quantity;
+            const comment = item.comment || '';
+            
+            summaryHTML += `
+                <div class="order-item">
+                    <div class="order-item-main">
+                        <span>${product.title} x${quantity}</span>
+                        <span>${formatPrice(product.price * quantity)} ₴</span>
+                    </div>
+                    ${comment ? `
+                        <div class="order-item-comment">
+                            <em>Коментар: "${comment}"</em>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+    }
+    
+    return summaryHTML;
+}
+
+function calculateCartTotal() {
+    return Object.entries(cart).reduce((sum, [productId, item]) => {
+        const product = products.find(p => p.id === productId);
+        return sum + (product ? product.price * item.quantity : 0);
+    }, 0);
+}
+
+function showOrderConfirmation(orderId, order) {
+    const modalContent = document.getElementById("modal-content");
+    
+    let deliveryInfo = '';
+    if (order.delivery.service === 'Нова Пошта') {
+        deliveryInfo = `
+            <p><strong>Спосіб доставки:</strong> ${order.delivery.service}</p>
+            <p><strong>Місто:</strong> ${order.delivery.city}</p>
+            <p><strong>Відділення:</strong> ${order.delivery.warehouse}</p>
+        `;
+    } else {
+        deliveryInfo = `
+            <p><strong>Спосіб доставки:</strong> ${order.delivery.service}</p>
+            <p><strong>Місто:</strong> ${order.delivery.city}</p>
+            <p><strong>Відділення:</strong> ${order.delivery.warehouse}</p>
+            <p><strong>Поштовий індекс:</strong> ${order.delivery.index}</p>
+            ${order.delivery.address ? `<p><strong>Адреса:</strong> ${order.delivery.address}</p>` : ''}
+        `;
+    }
+    
+    // ДОБАВЛЕНО: отображение комментария в подтверждении заказа
+    let commentInfo = '';
+    if (order.comment) {
+        commentInfo = `
+            <div class="comment-section" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                <h4 style="margin: 0 0 10px 0; color: #333;">Ваш коментар до замовлення:</h4>
+                <p style="margin: 0; font-style: italic; color: #555;">"${order.comment}"</p>
+            </div>
+        `;
+    }
+    
+    modalContent.innerHTML = `
+        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <div class="order-confirmation">
+            <div class="confirmation-header">
+                <i class="fas fa-check-circle"></i>
+                <h3>Замовлення успішно оформлено!</h3>
+            </div>
+            <div class="confirmation-details">
+                <p><strong>Номер замовлення:</strong> ${orderId}</p>
+                <p><strong>Ім'я:</strong> ${order.userName}</p>
+                <p><strong>Телефон:</strong> ${order.userPhone}</p>
+                <p><strong>Email:</strong> ${order.userEmail}</p>
+                ${commentInfo} <!-- ДОБАВЛЕНО: отображаем комментарий -->
+                ${deliveryInfo}
+                <div class="delivery-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <p>Доставка здійснюється за тарифами перевізника. Вартість доставки розраховується окремо та оплачується при отриманні замовлення.</p>
+                </div>
+                <p><strong>Спосіб оплати:</strong> ${order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою'}</p>
+                <p><strong>Сума товарів:</strong> ${formatPrice(order.total)} ₴</p>
+                
+                <div class="manager-notice" style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+                    <i class="fas fa-phone" style="color: #007bff; margin-right: 10px;"></i>
+                    <strong>Наш менеджер зв'яжеться з вами протягом години для підтвердження замовлення та уточнення деталей.</strong>
+                </div>
+            </div>
+            <div class="confirmation-actions">
+                <button class="btn btn-detail" onclick="closeModal()">Продовжити покупки</button>
+                <button class="btn" onclick="viewOrders()">Мої замовлення</button>
+            </div>
+        </div>
+    `;
+    
+    openModal();
+}
+
+// ===== ДОБАВЛЯЕМ СТИЛИ ДЛЯ КОММЕНТАРИЕВ =====
+function addCommentStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .cart-item-comment {
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #007bff;
+            font-size: 0.9em;
+            color: #555;
+        }
+        
+        .cart-item-comment strong {
+            color: #333;
+        }
+        
+        .order-item-comment {
+            margin-top: 5px;
+            padding: 5px 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #666;
+            border-left: 2px solid #28a745;
+        }
+        
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+        
+        .char-counter {
+            font-size: 0.8em;
+            color: #666;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .cart-item-comment {
+                font-size: 0.85em;
+                padding: 6px 10px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ===== ДОБАВЛЕНИЕ СТИЛЕЙ ДЛЯ ХАРАКТЕРИСТИК =====
+function addSpecificationsStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .product-specifications {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .product-specifications h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .spec-item:last-child {
+            border-bottom: none;
+        }
+        
+        .spec-key {
+            font-weight: 600;
+            color: #495057;
+            min-width: 120px;
+            margin-right: 15px;
+        }
+        
+        .spec-value {
+            color: #6c757d;
+            text-align: right;
+            flex: 1;
+        }
+        
+        .product-brand {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .availability-status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 6px;
+            background: #f8f9fa;
+        }
+        
+        .in-stock {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .out-of-stock {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .discount-badge {
+            background: #dc3545;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .spec-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .spec-value {
+                text-align: left;
+                margin-top: 5px;
+            }
+            
+            .product-specifications {
+                margin: 15px 0;
+                padding: 12px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ===== УЛУЧШЕННАЯ СИСТЕМА УПРАВЛЕНИЯ ЗАКАЗАМИ =====
+
+class OrderManager {
+    constructor() {
+        this.currentOrdersUnsubscribe = null;
+        this.orders = [];
     }
 
-    showNotification("Скасування замовлення...", "info");
+    // Инициализация менеджера заказов
+    init() {
+        this.setupEventListeners();
+    }
 
-    // Сначала получаем данные заказа
-    db.collection("orders").doc(orderId).get()
-        .then((doc) => {
+    // Настройка обработчиков событий
+    setupEventListeners() {
+        // Обработчик для кнопки "Мои заказы"
+        const ordersBtn = document.getElementById('orders-btn');
+        if (ordersBtn) {
+            ordersBtn.addEventListener('click', () => this.viewOrders());
+        }
+    }
+
+    // Показать заказы пользователя
+    async viewOrders() {
+        if (!currentUser) {
+            showNotification("Для перегляду замовлень необхідно авторизуватися", "warning");
+            openAuthModal();
+            return;
+        }
+
+        const modalContent = document.getElementById("modal-content");
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="closeModal()" aria-label="Закрити">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+            <div class="orders-header">
+                <h3>Мої замовлення</h3>
+                <div class="orders-stats" id="orders-stats"></div>
+            </div>
+            <div class="orders-filter">
+                <select id="orders-status-filter" onchange="orderManager.filterOrders(this.value)">
+                    <option value="all">Всі замовлення</option>
+                    <option value="new">Нові</option>
+                    <option value="processing">В обробці</option>
+                    <option value="shipped">Відправлені</option>
+                    <option value="delivered">Доставлені</option>
+                    <option value="cancelled">Скасовані</option>
+                </select>
+            </div>
+            <div id="user-orders-list" class="user-orders-list">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Завантаження замовлень...</p>
+                </div>
+            </div>
+        `;
+        
+        openModal();
+        await this.loadUserOrders();
+    }
+
+    // Загрузить заказы пользователя
+    async loadUserOrders() {
+        const ordersList = document.getElementById("user-orders-list");
+        if (!ordersList || !currentUser) return;
+
+        try {
+            // Отписываемся от предыдущего слушателя
+            if (this.currentOrdersUnsubscribe) {
+                this.currentOrdersUnsubscribe();
+            }
+
+            // Слушаем изменения в заказах в реальном времени
+            this.currentOrdersUnsubscribe = db.collection("orders")
+                .where("userId", "==", currentUser.uid)
+                .orderBy("createdAt", "desc")
+                .onSnapshot(
+                    (querySnapshot) => this.handleOrdersSnapshot(querySnapshot),
+                    (error) => this.handleOrdersError(error)
+                );
+
+        } catch (error) {
+            console.error("Помилка завантаження замовлень: ", error);
+            this.showOrdersError("Помилка завантаження замовлень");
+        }
+    }
+
+    // Обработка снимка данных заказов
+    handleOrdersSnapshot(querySnapshot) {
+        const ordersList = document.getElementById("user-orders-list");
+        const statsContainer = document.getElementById("orders-stats");
+        
+        if (querySnapshot.empty) {
+            this.showEmptyOrders();
+            if (statsContainer) statsContainer.innerHTML = '';
+            return;
+        }
+
+        this.orders = [];
+        let ordersHTML = '';
+        const statusCount = {
+            all: 0,
+            new: 0,
+            processing: 0,
+            shipped: 0,
+            delivered: 0,
+            cancelled: 0
+        };
+
+        querySnapshot.forEach((doc) => {
+            const order = { 
+                id: doc.id, 
+                ...doc.data(),
+                // Добавляем вычисляемые поля
+                itemsCount: this.calculateItemsCount(doc.data().items),
+                totalFormatted: formatPrice(doc.data().total || 0)
+            };
+            
+            this.orders.push(order);
+            statusCount.all++;
+            statusCount[order.status] = (statusCount[order.status] || 0) + 1;
+
+            ordersHTML += this.generateOrderItemHTML(order);
+        });
+
+        ordersList.innerHTML = ordersHTML;
+        
+        // Обновляем статистику
+        if (statsContainer) {
+            statsContainer.innerHTML = `
+                <span class="orders-count">${statusCount.all} замовлень</span>
+            `;
+        }
+
+        // Применяем текущий фильтр
+        this.applyCurrentFilter();
+    }
+
+    // Обработка ошибок загрузки заказов
+    handleOrdersError(error) {
+        console.error("Помилка завантаження замовлень: ", error);
+        this.showOrdersError("Не вдалося завантажити ваші замовлення. Спробуйте пізніше.");
+    }
+
+    // Показать сообщение об ошибке
+    showOrdersError(message) {
+        const ordersList = document.getElementById("user-orders-list");
+        if (!ordersList) return;
+
+        ordersList.innerHTML = `
+            <div class="error-loading">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Помилка завантаження</h3>
+                <p>${message}</p>
+                <button class="btn btn-primary" onclick="orderManager.loadUserOrders()">
+                    <i class="fas fa-redo"></i> Спробувати знову
+                </button>
+            </div>
+        `;
+    }
+
+    // Показать пустой список заказов
+    showEmptyOrders() {
+        const ordersList = document.getElementById("user-orders-list");
+        if (!ordersList) return;
+
+        ordersList.innerHTML = `
+            <div class="empty-orders">
+                <i class="fas fa-box-open"></i>
+                <h3>У вас ще немає замовлень</h3>
+                <p>Поверніться до каталогу та оберіть товари</p>
+                <button class="btn btn-primary" onclick="closeModal()">
+                    <i class="fas fa-shopping-bag"></i> Перейти до покупок
+                </button>
+            </div>
+        `;
+    }
+
+    // Подсчет количества товаров в заказе
+    calculateItemsCount(items) {
+        if (!items) return 0;
+        return Object.values(items).reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    // Генерация HTML для элемента заказа
+    generateOrderItemHTML(order) {
+        const orderDate = order.createdAt ? 
+            order.createdAt.toDate().toLocaleString('uk-UA') : 
+            'Дата не вказана';
+        
+        const statusInfo = this.getStatusInfo(order.status);
+        const trackingButton = this.generateTrackingButton(order);
+
+        return `
+            <div class="user-order-item" data-status="${order.status}">
+                <div class="order-header">
+                    <div class="order-main-info">
+                        <h4>Замовлення #${order.id}</h4>
+                        <span class="order-date">${orderDate}</span>
+                    </div>
+                    <span class="order-status ${statusInfo.class}">
+                        ${statusInfo.icon} ${statusInfo.text}
+                    </span>
+                </div>
+                
+                <div class="order-summary-short">
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <i class="fas fa-cube"></i>
+                            <span>${order.itemsCount} товарів</span>
+                        </div>
+                        <div class="summary-item">
+                            <i class="fas fa-receipt"></i>
+                            <span>${order.totalFormatted} ₴</span>
+                        </div>
+                        <div class="summary-item">
+                            <i class="fas fa-truck"></i>
+                            <span>${order.delivery?.service || 'Не вказано'}</span>
+                        </div>
+                        ${order.ttn ? `
+                            <div class="summary-item">
+                                <i class="fas fa-barcode"></i>
+                                <span>ТТН: ${order.ttn}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+
+                <div class="user-order-actions">
+                    <button class="btn btn-outline" onclick="orderManager.viewOrderDetails('${order.id}')">
+                        <i class="fas fa-eye"></i> Деталі замовлення
+                    </button>
+                    ${trackingButton}
+                    ${order.status === 'new' ? `
+                        <button class="btn btn-danger" onclick="orderManager.cancelOrder('${order.id}')">
+                            <i class="fas fa-times"></i> Скасувати
+                        </button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    // Генерация кнопки отслеживания
+    generateTrackingButton(order) {
+        if (!order.ttn) return '';
+
+        const trackingUrl = this.getTrackingUrl(order);
+        if (!trackingUrl) return '';
+
+        return `
+            <a href="${trackingUrl}" 
+               target="_blank" 
+               class="btn btn-outline"
+               onclick="orderManager.trackPackage('${order.id}')">
+                <i class="fas fa-truck"></i> Відстежити
+            </a>
+        `;
+    }
+
+    // Получение URL для отслеживания
+    getTrackingUrl(order) {
+        if (!order.ttn) return null;
+
+        const deliveryService = order.delivery?.service?.toLowerCase() || '';
+        const ttn = order.ttn.trim();
+
+        if (deliveryService.includes('нова') || deliveryService.includes('nova')) {
+            // Новая Почта
+            return `https://tracking.novaposhta.ua/#/uk/search/${ttn}`;
+        } else if (deliveryService.includes('укрпошта') || deliveryService.includes('ukrposhta')) {
+            // Укрпошта
+            return `https://track.ukrposhta.ua/tracking_UA.html?barcode=${ttn}`;
+        } else {
+            // По умолчанию считаем, что это Новая Почта
+            return `https://tracking.novaposhta.ua/#/uk/search/${ttn}`;
+        }
+    }
+
+    // Получить информацию о статусе
+    getStatusInfo(status) {
+        const statusMap = {
+            'new': { class: 'status-new', text: 'Новий', icon: '🆕' },
+            'processing': { class: 'status-processing', text: 'В обробці', icon: '⚙️' },
+            'shipped': { class: 'status-shipped', text: 'Відправлено', icon: '🚚' },
+            'delivered': { class: 'status-delivered', text: 'Доставлено', icon: '✅' },
+            'cancelled': { class: 'status-cancelled', text: 'Скасовано', icon: '❌' }
+        };
+        
+        return statusMap[status] || statusMap['new'];
+    }
+
+    // Фильтрация заказов по статусу
+    filterOrders(status) {
+        const orderItems = document.querySelectorAll('.user-order-item');
+        
+        orderItems.forEach(item => {
+            if (status === 'all' || item.dataset.status === status) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // Показываем сообщение, если нет заказов с выбранным статусом
+        const visibleOrders = document.querySelectorAll('.user-order-item[style="display: block"]');
+        const ordersList = document.getElementById("user-orders-list");
+        
+        if (visibleOrders.length === 0 && this.orders.length > 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'no-orders-found';
+            noResults.innerHTML = `
+                <i class="fas fa-search"></i>
+                <h4>Не знайдено замовлень з обраним статусом</h4>
+                <button class="btn btn-outline" onclick="orderManager.filterOrders('all')">
+                    Показати всі замовлення
+                </button>
+            `;
+            
+            // Убедимся, что сообщение добавляется только один раз
+            const existingMessage = ordersList.querySelector('.no-orders-found');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+            ordersList.appendChild(noResults);
+        } else {
+            const existingMessage = ordersList.querySelector('.no-orders-found');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+        }
+    }
+
+    // Применить текущий фильтр
+    applyCurrentFilter() {
+        const filterSelect = document.getElementById('orders-status-filter');
+        if (filterSelect) {
+            this.filterOrders(filterSelect.value);
+        }
+    }
+
+    // Просмотр деталей заказа
+    async viewOrderDetails(orderId) {
+        try {
+            const doc = await db.collection("orders").doc(orderId).get();
+            
             if (!doc.exists) {
                 showNotification("Замовлення не знайдено", "error");
                 return;
             }
             
-            const order = doc.data();
+            const order = { id: doc.id, ...doc.data() };
             
-            // Проверяем права доступа
+            // Проверка прав доступа
             if (!adminMode && order.userId !== currentUser.uid) {
-                showNotification("Ви не можете скасувати це замовлення", "error");
+                showNotification("У вас немає доступу до цього замовлення", "error");
                 return;
             }
             
-            // Проверяем, можно ли отменить заказ
-            if (order.status !== 'new') {
-                showNotification("Неможливо скасувати замовлення з поточним статусом: " + getStatusText(order.status), "error");
-                return;
-            }
+            this.showOrderDetailsModal(order);
             
-            // Выполняем отмену
-            return performOrderCancellation(orderId, order);
-        })
-        .then(() => {
-            // Успешная отмена
-            showNotification("Замовлення успішно скасовано");
-            
-            // Обновляем интерфейс в зависимости от контекста
-            setTimeout(() => {
-                if (adminMode) {
-                    loadAdminOrders();
-                } else {
-                    // Закрываем модальное окно и обновляем список заказов
-                    closeModal();
-                    viewOrders();
-                }
-            }, 1000);
-        })
-        .catch((error) => {
-            console.error("Помилка скасування замовлення: ", error);
-            showNotification("Помилка скасування замовлення", "error");
-        });
-}
+        } catch (error) {
+            console.error("Помилка завантаження деталей замовлення: ", error);
+            showNotification("Помилка завантаження деталей замовлення", "error");
+        }
+    }
 
-// ===== УЛУЧШЕННАЯ ФУНКЦИЯ ВЫПОЛНЕНИЯ ОТМЕНЫ =====
-function performOrderCancellation(orderId, order) {
-    const updateData = {
-        status: 'cancelled',
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
-        cancelledBy: adminMode ? 'admin' : 'user',
-        cancelledById: currentUser.uid
-    };
-    
-    return db.collection("orders").doc(orderId).update(updateData);
-}
-
-// Збереження URL фіду
-function saveFeedUrl() {
-  const feedUrl = document.getElementById("feed-url").value;
-  localStorage.setItem(FEED_URL_KEY, feedUrl);
-  showNotification("URL фіду збережено");
-}
-
-// Очищення каталогу
-function clearCatalog() {
-  if (confirm("Ви впевнені, що хочете очистити каталог? Цю дію не можна скасувати.")) {
-    showLoadingSkeleton();
-    
-    db.collection("products").get()
-      .then((querySnapshot) => {
-        const batch = db.batch();
-        querySnapshot.forEach((doc) => {
-          batch.delete(doc.ref);
-        });
-        return batch.commit();
-      })
-      .then(() => {
-        products = [];
-        localStorage.removeItem('products_backup');
-        renderProducts();
-        renderFeaturedProducts();
-        renderCategories();
-        renderBrands();
-        showNotification("Каталог очищено");
-      })
-      .catch((error) => {
-        console.error("Помилка при очищенні каталогу: ", error);
-        showNotification("Помилка при очищенні каталогу", "error");
-      });
-  }
-}
-
-// Експорт в JSON
-function exportJSON() {
-  const dataStr = JSON.stringify(products, null, 2);
-  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-  
-  const exportFileDefaultName = 'products.json';
-  
-  const linkElement = document.createElement('a');
-  linkElement.setAttribute('href', dataUri);
-  linkElement.setAttribute('download', exportFileDefaultName);
-  linkElement.click();
-  
-  showNotification("Дані експортовано в JSON");
-}
-
-// Функція відкриття модального вікна додавання товару
-function openAddProductModal() {
-  const modalContent = document.getElementById("modal-content");
-  modalContent.innerHTML = `
-    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-    <h3>Додати новий товар</h3>
-    <form onsubmit="saveNewProduct(event)">
-      <div class="form-group">
-        <label>Назва товару</label>
-        <input type="text" id="product-title" required>
-      </div>
-      <div class="form-group">
-        <label>Опис</label>
-        <textarea id="product-description" rows="3"></textarea>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Ціна, ₴</label>
-          <input type="number" id="product-price" min="0" step="0.01" required>
-        </div>
-        <div class="form-group">
-          <label>Стара ціна, ₴</label>
-          <input type="number" id="product-old-price" min="0" step="0.01">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Категорія</label>
-          <input type="text" id="product-category" required>
-        </div>
-        <div class="form-group">
-          <label>Бренд</label>
-          <input type="text" id="product-brand" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>URL зображення</label>
-        <input type="url" id="product-image">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="product-in-stock"> В наявності
-          </label>
-        </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="product-is-new"> Новинка
-          </label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Знижка, %</label>
-        <input type="number" id="product-discount" min="0" max="100">
-      </div>
-      <button type="submit" class="btn btn-detail">Зберегти товар</button>
-    </form>
-  `;
-  
-  openModal();
-  
-  setTimeout(optimizeModalForMobile, 100);
-}
-
-// Функція збереження нового товару
-function saveNewProduct(event) {
-  event.preventDefault();
-  
-  const newProduct = {
-    title: document.getElementById('product-title').value,
-    description: document.getElementById('product-description').value,
-    price: parseFloat(document.getElementById('product-price').value),
-    oldPrice: document.getElementById('product-old-price').value ? parseFloat(document.getElementById('product-old-price').value) : null,
-    category: document.getElementById('product-category').value,
-    brand: document.getElementById('product-brand').value,
-    image: document.getElementById('product-image').value || '',
-    inStock: document.getElementById('product-in-stock').checked,
-    isNew: document.getElementById('product-is-new').checked,
-    discount: document.getElementById('product-discount').value ? parseInt(document.getElementById('product-discount').value) : null
-  };
-  
-  saveProduct(newProduct)
-    .then(() => {
-      closeModal();
-      switchTab('products-tab');
-    });
-}
-
-// Функція завантаження товарів в адмін-панелі
-function loadAdminProducts() {
-  const productsList = document.getElementById("admin-products-list");
-  productsList.innerHTML = '<p>Завантаження товарів...</p>';
-  
-  db.collection("products")
-    .orderBy("createdAt", "desc")
-    .get()
-    .then((querySnapshot) => {
-      if (querySnapshot.empty) {
-        productsList.innerHTML = '<p>Товарів немає</p>';
-        return;
-      }
-      
-      productsList.innerHTML = `
-        <div style="margin-bottom: 15px;">
-          <input type="text" id="admin-products-search" placeholder="Пошук товарів..." oninput="searchAdminProducts(this.value)" style="padding: 8px; width: 100%; border: 1px solid #ddd; border-radius: var(--border-radius);">
-        </div>
-        <div class="admin-products-container"></div>
-      `;
-      
-      const productsContainer = productsList.querySelector('.admin-products-container');
-      
-      querySnapshot.forEach((doc) => {
-        const product = { id: doc.id, ...doc.data() };
-        const productElement = document.createElement('div');
-        productElement.className = 'admin-product-item';
-        productElement.style.border = '1px solid #eee';
-        productElement.style.padding = '15px';
-        productElement.style.marginBottom = '15px';
-        productElement.style.borderRadius = '8px';
+    // Показать модальное окно с деталями заказа
+    showOrderDetailsModal(order) {
+        const modalContent = document.getElementById("modal-content");
+        const itemsHTML = this.generateOrderItemsHTML(order);
+        const statusInfo = this.getStatusInfo(order.status);
+        const trackingButton = this.generateTrackingButton(order);
         
-        productElement.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-            <div style="flex: 1;">
-              <h4>${product.title}</h4>
-              <p>${product.description || 'Опис відсутній'}</p>
-              <p><strong>Ціна:</strong> ${formatPrice(product.price)} ₴</p>
-              <p><strong>Категорія:</strong> ${translateCategory(product.category)}</p>
-              <p><strong>Бренд:</strong> ${product.brand}</p>
-              <p><strong>Статус:</strong> ${product.inStock ? 'В наявності' : 'Немає в наявності'}</p>
+        modalContent.innerHTML = `
+            <button class="modal-close" onclick="closeModal()" aria-label="Закрити">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+            
+            <div class="order-details-container">
+                <div class="order-details-header">
+                    <h3>Замовлення #${order.id}</h3>
+                    <span class="order-status-badge ${statusInfo.class}">
+                        ${statusInfo.icon} ${statusInfo.text}
+                    </span>
+                </div>
+
+                ${this.generateTTNSection(order)}
+                ${this.generateCustomerInfoSection(order)}
+                ${this.generateOrderMetaSection(order)}
+                ${this.generateDeliveryInfoSection(order)}
+                ${adminMode ? this.generateAdminControlsSection(order) : ''}
+                ${this.generateOrderItemsSection(order, itemsHTML)}
+                ${this.generateOrderTotalSection(order)}
+                
+                <div class="order-actions-footer">
+                    ${trackingButton}
+                    <button class="btn btn-outline" onclick="orderManager.printOrder('${order.id}')">
+                        <i class="fas fa-print"></i> Друк
+                    </button>
+                    <button class="btn" onclick="closeModal()">
+                        <i class="fas fa-times"></i> Закрити
+                    </button>
+                </div>
             </div>
-            <div>
-              <img src="${product.image || 'https://via.placeholder.com/100x100?text=No+Image'}" alt="${product.title}" style="width: 100px; height: 100px; object-fit: cover; border-radius: var(--border-radius);">
-            </div>
-          </div>
-          <div style="margin-top: 15px; display: flex; gap: 10px;">
-            <button class="btn btn-detail" onclick="editProduct('${product.id}')">Редагувати</button>
-            <button class="btn" style="background: var(--danger); color: white;" onclick="deleteProduct('${product.id}')">Видалити</button>
-          </div>
         `;
         
-        productsContainer.appendChild(productElement);
-      });
-    })
-    .catch((error) => {
-      console.error("Помилка завантаження товарів: ", error);
-      productsList.innerHTML = '<p>Помилка завантаження товарів</p>';
-    });
-}
-
-// Функція пошуку товарів в адмін-панелі
-function searchAdminProducts(query) {
-  const productItems = document.querySelectorAll('.admin-product-item');
-  
-  productItems.forEach(item => {
-    const title = item.querySelector('h4').textContent.toLowerCase();
-    const description = item.querySelector('p').textContent.toLowerCase();
-    const searchText = query.toLowerCase();
-    
-    if (title.includes(searchText) || description.includes(searchText)) {
-      item.style.display = 'block';
-    } else {
-      item.style.display = 'none';
-    }
-  });
-}
-
-// Функція редагування товару
-function editProduct(productId) {
-  const product = products.find(p => p.id === productId);
-  if (!product) return;
-  
-  const modalContent = document.getElementById("modal-content");
-  modalContent.innerHTML = `
-    <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-    <h3>Редагувати товар</h3>
-    <form onsubmit="updateProduct(event, '${productId}')">
-      <div class="form-group">
-        <label>Назва товару</label>
-        <input type="text" id="edit-product-title" value="${product.title}" required>
-      </div>
-      <div class="form-group">
-        <label>Опис</label>
-        <textarea id="edit-product-description" rows="3">${product.description || ''}</textarea>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Ціна, ₴</label>
-          <input type="number" id="edit-product-price" min="0" step="0.01" value="${product.price}" required>
-        </div>
-        <div class="form-group">
-          <label>Стара ціна, ₴</label>
-          <input type="number" id="edit-product-old-price" min="0" step="0.01" value="${product.oldPrice || ''}">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Категорія</label>
-          <input type="text" id="edit-product-category" value="${product.category}" required>
-        </div>
-        <div class="form-group">
-          <label>Бренд</label>
-          <input type="text" id="edit-product-brand" value="${product.brand}" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>URL зображення</label>
-        <input type="url" id="edit-product-image" value="${product.image || ''}">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="edit-product-in-stock" ${product.inStock ? 'checked' : ''}> В наявності
-          </label>
-        </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="edit-product-is-new" ${product.isNew ? 'checked' : ''}> Новинка
-          </label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Знижка, %</label>
-        <input type="number" id="edit-product-discount" min="0" max="100" value="${product.discount || ''}">
-      </div>
-      <button type="submit" class="btn btn-detail">Оновити товар</button>
-    </form>
-  `;
-  
-  openModal();
-  
-  setTimeout(optimizeModalForMobile, 100);
-}
-
-// Функція оновлення товару
-function updateProduct(event, productId) {
-  event.preventDefault();
-  
-  const updatedProduct = {
-    id: productId,
-    title: document.getElementById('edit-product-title').value,
-    description: document.getElementById('edit-product-description').value,
-    price: parseFloat(document.getElementById('edit-product-price').value),
-    oldPrice: document.getElementById('edit-product-old-price').value ? parseFloat(document.getElementById('edit-product-old-price').value) : null,
-    category: document.getElementById('edit-product-category').value,
-    brand: document.getElementById('edit-product-brand').value,
-    image: document.getElementById('edit-product-image').value || '',
-    inStock: document.getElementById('edit-product-in-stock').checked,
-    isNew: document.getElementById('edit-product-is-new').checked,
-    discount: document.getElementById('edit-product-discount').value ? parseInt(document.getElementById('edit-product-discount').value) : null
-  };
-  
-  saveProduct(updatedProduct)
-    .then(() => {
-      closeModal();
-      switchTab('products-tab');
-    });
-}
-
-// Функція видалення товару
-function deleteProduct(productId) {
-  if (confirm("Ви впевнені, що хочете видалити цей товар? Цю дію не можна скасувати.")) {
-    db.collection("products").doc(productId).delete()
-      .then(() => {
-        showNotification("Товар успішно видалено");
-        loadAdminProducts();
-      })
-      .catch((error) => {
-        console.error("Помилка видалення товару: ", error);
-        showNotification("Помилка видалення товару", "error");
-      });
-  }
-}
-
-// ===== ФУНКЦИИ ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ =====
-
-// Функция открытия профиля пользователя
-function openProfile() {
-    if (!currentUser) {
-        openAuthModal();
-        showNotification("Увійдіть в систему для перегляду профілю", "warning");
-        return;
+        openModal();
     }
 
-    const modalContent = document.getElementById("modal-content");
-    modalContent.innerHTML = `
-        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-        <h3>Профіль користувача</h3>
-        <div class="profile-container">
-            <div class="profile-info">
-                <div class="profile-avatar">
-                    <i class="fas fa-user-circle"></i>
+    // Генерация секции ТТН
+    generateTTNSection(order) {
+        if (!order.ttn) {
+            return `
+                <div class="ttn-section no-ttn">
+                    <i class="fas fa-info-circle"></i>
+                    <p>ТТН ще не додано до цього замовлення. Ми повідомимо вас, коли замовлення буде відправлено.</p>
                 </div>
-                <div class="profile-details">
-                    <p><strong>Ім'я:</strong> <span id="profile-display-name">${currentUser.displayName || 'Не вказано'}</span></p>
-                    <p><strong>Email:</strong> <span id="profile-email">${currentUser.email || 'Не вказано'}</span></p>
-                    <p><strong>ID:</strong> <span id="profile-uid">${currentUser.uid}</span></p>
-                    <p><strong>Дата реєстрації:</strong> <span id="profile-created">${currentUser.metadata.creationTime ? new Date(currentUser.metadata.creationTime).toLocaleDateString('uk-UA') : 'Невідомо'}</span></p>
+            `;
+        }
+
+        const ttnDate = order.ttnAddedAt ? 
+            order.ttnAddedAt.toDate().toLocaleString('uk-UA') : 
+            'Дата не вказана';
+
+        const trackingUrl = this.getTrackingUrl(order);
+
+        return `
+            <div class="ttn-section">
+                <h4>📦 Інформація про відправлення</h4>
+                <div class="ttn-info">
+                    <div class="ttn-item">
+                        <strong>ТТН номер:</strong>
+                        <span class="ttn-number">${order.ttn}</span>
+                    </div>
+                    <div class="ttn-item">
+                        <strong>Дата відправки:</strong>
+                        <span>${ttnDate}</span>
+                    </div>
+                    <div class="ttn-item">
+                        <strong>Служба доставки:</strong>
+                        <span>${order.delivery?.service || 'Не вказано'}</span>
+                    </div>
+                </div>
+                ${trackingUrl ? `
+                    <a href="${trackingUrl}" 
+                       target="_blank" 
+                       class="btn btn-track"
+                       onclick="orderManager.trackPackage('${order.id}')">
+                        <i class="fas fa-external-link-alt"></i> Відстежити посилку
+                    </a>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // Генерация секции информации о клиенте
+    generateCustomerInfoSection(order) {
+        // ДОБАВЛЕНО: отображение комментария клиента
+        let commentSection = '';
+        if (order.comment) {
+            commentSection = `
+                <div class="info-item full-width">
+                    <strong>Коментар клієнта:</strong>
+                    <div class="customer-comment">${order.comment}</div>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="customer-info-section">
+                <h4>👤 Інформація про клієнта</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Ім'я:</strong>
+                        <span>${order.userName}</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Email:</strong>
+                        <span>${order.userEmail}</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Телефон:</strong>
+                        <span>${order.userPhone}</span>
+                    </div>
+                    ${commentSection}
                 </div>
             </div>
-            
-            <div class="profile-actions">
-                <h4>Налаштування профілю</h4>
-                <form onsubmit="updateProfile(event)">
-                    <div class="form-group">
-                        <label>Ім'я та прізвище</label>
-                        <input type="text" id="profile-name-input" value="${currentUser.displayName || ''}" placeholder="Введіть ваше ім'я">
+        `;
+    }
+
+    // Генерация секции мета-информации заказа
+    generateOrderMetaSection(order) {
+        const orderDate = order.createdAt ? 
+            order.createdAt.toDate().toLocaleString('uk-UA') : 
+            'Дата не вказана';
+        const updatedDate = order.updatedAt ? 
+            order.updatedAt.toDate().toLocaleString('uk-UA') : 
+            'Дата не вказана';
+
+        return `
+            <div class="order-meta-section">
+                <h4>📋 Інформація про замовлення</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Дата створення:</strong>
+                        <span>${orderDate}</span>
                     </div>
-                    <div class="form-group">
-                        <label>Новий пароль</label>
-                        <input type="password" id="profile-password-input" placeholder="Залиште порожнім, щоб не змінювати">
+                    <div class="info-item">
+                        <strong>Дата оновлення:</strong>
+                        <span>${updatedDate}</span>
                     </div>
-                    <button type="submit" class="btn btn-detail">Оновити профіль</button>
-                </form>
-            </div>
-            
-            <div class="profile-stats">
-                <h4>Статистика</h4>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="stat-value" id="profile-orders-count">0</span>
-                        <span class="stat-label">Замовлень</span>
+                    <div class="info-item">
+                        <strong>Спосіб оплати:</strong>
+                        <span>${order.paymentMethod === 'cash' ? '💵 Готівкою при отриманні' : '💳 Онлайн-оплата'}</span>
                     </div>
-                    <div class="stat-item">
-                        <i class="far fa-heart"></i>
-                        <span class="stat-value" id="profile-favorites-count">${Object.keys(favorites).length}</span>
-                        <span class="stat-label">Обраних товарів</span>
+                    <div class="info-item">
+                        <strong>Номер замовлення:</strong>
+                        <span class="order-number">${order.id}</span>
                     </div>
                 </div>
             </div>
-        </div>
-    `;
+        `;
+    }
 
-    // Загружаем статистику заказов
-    loadUserOrderStats();
-    
-    openModal();
-    setTimeout(optimizeModalForMobile, 100);
+    // Генерация секции информации о доставке
+    generateDeliveryInfoSection(order) {
+        const deliveryService = order.delivery?.service || 'Не вказано';
+        const estimatedDelivery = this.getEstimatedDelivery(deliveryService);
+
+        return `
+            <div class="delivery-info-section">
+                <h4>🚚 Доставка</h4>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Служба доставки:</strong>
+                        <span>${deliveryService}</span>
+                    </div>
+                    ${order.delivery?.city ? `
+                        <div class="info-item">
+                            <strong>Місто:</strong>
+                            <span>${order.delivery.city}</span>
+                        </div>
+                    ` : ''}
+                    ${order.delivery?.warehouse ? `
+                        <div class="info-item">
+                            <strong>Відділення:</strong>
+                            <span>${order.delivery.warehouse}</span>
+                        </div>
+                    ` : ''}
+                    ${order.delivery?.index ? `
+                        <div class="info-item">
+                            <strong>Поштовий індекс:</strong>
+                            <span>${order.delivery.index}</span>
+                        </div>
+                    ` : ''}
+                    ${order.delivery?.address ? `
+                        <div class="info-item">
+                            <strong>Адреса:</strong>
+                            <span>${order.delivery.address}</span>
+                        </div>
+                    ` : ''}
+                    <div class="info-item">
+                        <strong>Орієнтовний термін доставки:</strong>
+                        <span>${estimatedDelivery}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Получение ориентировочного срока доставки
+    getEstimatedDelivery(service) {
+        if (service.includes('Нова Пошта')) {
+            return '1-3 робочих дні';
+        } else if (service.includes('Укрпошта')) {
+            return '2-5 робочих днів';
+        } else {
+            return '2-4 робочих дні';
+        }
+    }
+
+    // Генерация секции админ-контролов
+    generateAdminControlsSection(order) {
+        return `
+            <div class="admin-controls-section">
+                <h4>⚙️ Керування замовленням (Адмін)</h4>
+                <div class="admin-controls-grid">
+                    <select onchange="orderManager.changeOrderStatus('${order.id}', this.value)" 
+                            class="status-select">
+                        <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новий</option>
+                        <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>В обробці</option>
+                        <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Відправлено</option>
+                        <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Доставлено</option>
+                        <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Скасовано</option>
+                    </select>
+                    <button class="btn btn-outline" onclick="orderManager.addTTNToOrder('${order.id}')">
+                        <i class="fas fa-truck"></i> ${order.ttn ? 'Змінити ТТН' : 'Додати ТТН'}
+                    </button>
+                    <button class="btn btn-danger" onclick="orderManager.deleteOrder('${order.id}')">
+                        <i class="fas fa-trash"></i> Видалити
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Генерация секции товаров заказа
+    generateOrderItemsSection(order, itemsHTML) {
+        const itemsCount = this.calculateItemsCount(order.items);
+        
+        return `
+            <div class="order-items-section">
+                <h4>🛍️ Товари у замовленні (${itemsCount} шт.)</h4>
+                <div class="order-items-container">
+                    ${itemsHTML || '<p class="no-items">Товари не знайдені</p>'}
+                </div>
+            </div>
+        `;
+    }
+
+    // Генерация HTML для товаров заказа
+    generateOrderItemsHTML(order) {
+        if (!order.items) return '';
+        
+        let itemsHTML = '';
+        let totalAmount = 0;
+        
+        for (const [productId, item] of Object.entries(order.items)) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                const quantity = item.quantity;
+                const comment = item.comment || '';
+                const itemTotal = product.price * quantity;
+                totalAmount += itemTotal;
+                
+                itemsHTML += `
+                    <div class="order-item-detail" onclick="showProductDetail('${product.id}')">
+                        <img src="${product.image || 'https://via.placeholder.com/80x80?text=Fashion'}" 
+                             alt="${product.title}" 
+                             class="order-item-image">
+                        <div class="order-item-info">
+                            <h5 class="order-item-title">${product.title}</h5>
+                            <div class="order-item-meta">
+                                ${product.brand ? `<span class="item-brand">${product.brand}</span>` : ''}
+                                <span class="item-quantity">Кількість: ${quantity}</span>
+                                ${product.size ? `<span class="item-size">Розмір: ${product.size}</span>` : ''}
+                            </div>
+                            ${comment ? `
+                                <div class="order-item-comment">
+                                    <strong>Коментар:</strong> ${comment}
+                                </div>
+                            ` : ''}
+                            <div class="order-item-pricing">
+                                <span class="item-price">${formatPrice(product.price)} ₴ × ${quantity}</span>
+                                <span class="item-total">${formatPrice(itemTotal)} ₴</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        return itemsHTML;
+    }
+
+    // Генерация секции итоговой суммы
+    generateOrderTotalSection(order) {
+        const total = order.total || this.calculateOrderTotal(order.items);
+        
+        return `
+            <div class="order-total-section">
+                <div class="total-line">
+                    <span>Сума товарів:</span>
+                    <span>${formatPrice(total)} ₴</span>
+                </div>
+                <div class="total-line delivery-cost">
+                    <span>Вартість доставки:</span>
+                    <span>За тарифами перевізника</span>
+                </div>
+                <div class="total-line final-total">
+                    <strong>Разом до сплати:</strong>
+                    <strong>${formatPrice(total)} ₴</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    // Подсчет общей суммы заказа
+    calculateOrderTotal(items) {
+        if (!items) return 0;
+        
+        return Object.entries(items).reduce((sum, [productId, item]) => {
+            const product = products.find(p => p.id === productId);
+            return sum + (product ? product.price * item.quantity : 0);
+        }, 0);
+    }
+
+    // Отслеживание посылки
+    trackPackage(orderId) {
+        console.log(`Tracking package for order: ${orderId}`);
+        // Можно добавить аналитику здесь
+    }
+
+    // Печать заказа
+    printOrder(orderId) {
+        const order = this.orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        const printWindow = window.open('', '_blank');
+        const printContent = this.generatePrintContent(order);
+        
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Замовлення #${order.id}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; }
+                    .print-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+                    .print-section { margin-bottom: 20px; }
+                    .print-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                    .print-table th, .print-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                    .print-table th { background-color: #f5f5f5; }
+                    .total-section { margin-top: 30px; text-align: right; font-weight: bold; }
+                    @media print { body { margin: 0; } }
+                </style>
+            </head>
+            <body>
+                ${printContent}
+            </body>
+            </html>
+        `);
+        
+        printWindow.document.close();
+        printWindow.print();
+    }
+
+    // Генерация контента для печати
+    generatePrintContent(order) {
+        const orderDate = order.createdAt ? 
+            order.createdAt.toDate().toLocaleString('uk-UA') : 
+            'Дата не вказана';
+        
+        let itemsHTML = '';
+        let total = 0;
+
+        if (order.items) {
+            for (const [productId, item] of Object.entries(order.items)) {
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    const quantity = item.quantity;
+                    const comment = item.comment || '';
+                    const itemTotal = product.price * quantity;
+                    total += itemTotal;
+                    
+                    itemsHTML += `
+                        <tr>
+                            <td>${product.title}</td>
+                            <td>${product.brand || '-'}</td>
+                            <td>${quantity}</td>
+                            <td>${formatPrice(product.price)} ₴</td>
+                            <td>${formatPrice(itemTotal)} ₴</td>
+                        </tr>
+                        ${comment ? `
+                        <tr>
+                            <td colspan="5" style="background: #f8f9fa; padding: 8px; font-style: italic;">
+                                <strong>Коментар:</strong> ${comment}
+                            </td>
+                        </tr>
+                        ` : ''}
+                    `;
+                }
+            }
+        }
+
+        // ДОБАВЛЕНО: комментарий в печатную версию
+        const commentSection = order.comment ? `
+            <div class="print-section">
+                <h3>Коментар клієнта до замовлення</h3>
+                <p style="background: #f8f9fa; padding: 15px; border-radius: 6px; border-left: 4px solid #007bff;">
+                    ${order.comment}
+                </p>
+            </div>
+        ` : '';
+
+        return `
+            <div class="print-header">
+                <h1>FashionStore</h1>
+                <h2>Замовлення #${order.id}</h2>
+                <p>Дата створення: ${orderDate}</p>
+            </div>
+            
+            <div class="print-section">
+                <h3>Інформація про клієнта</h3>
+                <p><strong>Ім'я:</strong> ${order.userName}</p>
+                <p><strong>Телефон:</strong> ${order.userPhone}</p>
+                <p><strong>Email:</strong> ${order.userEmail}</p>
+            </div>
+            
+            ${commentSection}
+            
+            <div class="print-section">
+                <h3>Доставка</h3>
+                <p><strong>Служба доставки:</strong> ${order.delivery?.service || 'Не вказано'}</p>
+                <p><strong>Місто:</strong> ${order.delivery?.city || 'Не вказано'}</p>
+                <p><strong>Відділення:</strong> ${order.delivery?.warehouse || 'Не вказано'}</p>
+                ${order.delivery?.index ? `<p><strong>Поштовий індекс:</strong> ${order.delivery.index}</p>` : ''}
+                ${order.delivery?.address ? `<p><strong>Адреса:</strong> ${order.delivery.address}</p>` : ''}
+            </div>
+            
+            <div class="print-section">
+                <h3>Товари</h3>
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th>Бренд</th>
+                            <th>Кількість</th>
+                            <th>Ціна</th>
+                            <th>Сума</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHTML}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="total-section">
+                <p><strong>Загальна сума: ${formatPrice(total)} ₴</strong></p>
+                <p><strong>Статус: ${this.getStatusInfo(order.status).text}</strong></p>
+                ${order.ttn ? `<p><strong>ТТН: ${order.ttn}</strong></p>` : ''}
+            </div>
+        `;
+    }
+
+    // Отмена заказа
+    async cancelOrder(orderId) {
+        if (!confirm("Ви впевнені, що хочете скасувати це замовлення? Цю дію неможливо скасувати.")) {
+            return;
+        }
+
+        try {
+            await db.collection("orders").doc(orderId).update({
+                status: 'cancelled',
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            showNotification("Замовлення успішно скасовано");
+            
+        } catch (error) {
+            console.error("Помилка скасування замовлення: ", error);
+            showNotification("Помилка скасування замовлення", "error");
+        }
+    }
+
+    // Изменение статуса заказа (для админа)
+    async changeOrderStatus(orderId, status) {
+        try {
+            await db.collection("orders").doc(orderId).update({
+                status,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            showNotification(`Статус замовлення змінено на: ${this.getStatusInfo(status).text}`);
+            
+        } catch (error) {
+            console.error("Помилка оновлення статусу замовлення: ", error);
+            showNotification("Помилка оновлення статусу замовлення", "error");
+        }
+    }
+
+    // Добавление ТТН к заказу (для админа)
+    async addTTNToOrder(orderId) {
+        const currentOrder = this.orders.find(order => order.id === orderId);
+        const currentTTN = currentOrder?.ttn || '';
+        
+        const ttn = prompt('Введіть ТТН (трек-номер) для цього замовлення:', currentTTN);
+        
+        if (ttn && ttn.trim() !== '') {
+            try {
+                await db.collection("orders").doc(orderId).update({
+                    ttn: ttn.trim(),
+                    ttnAddedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                showNotification("ТТН успішно додано до замовлення");
+                
+                // Отправка email с ТТН
+                const orderDoc = await db.collection("orders").doc(orderId).get();
+                if (orderDoc.exists) {
+                    const order = { id: orderDoc.id, ...orderDoc.data() };
+                    this.sendTTNEmail(order);
+                }
+                
+            } catch (error) {
+                console.error("Помилка додавання ТТН: ", error);
+                showNotification("Помилка додавання ТТН", "error");
+            }
+        }
+    }
+
+    // Удаление заказа (для админа)
+    async deleteOrder(orderId) {
+        if (!confirm("Ви впевнені, що хочете видалити це замовлення? Цю дію неможливо скасувати.")) {
+            return;
+        }
+
+        try {
+            await db.collection("orders").doc(orderId).delete();
+            showNotification("Замовлення успішно видалено");
+        } catch (error) {
+            console.error("Помилка видалення замовлення: ", error);
+            showNotification("Помилка видалення замовлення", "error");
+        }
+    }
+
+    // Отправка email с ТТН
+    sendTTNEmail(order) {
+        if (!order.ttn) return;
+        
+        const trackingUrl = this.getTrackingUrl(order);
+        
+        const templateParams = {
+            to_email: order.userEmail,
+            order_id: order.id,
+            customer_name: order.userName,
+            ttn_number: order.ttn,
+            delivery_service: order.delivery?.service || 'Нова Пошта',
+            delivery_city: order.delivery?.city || '',
+            delivery_warehouse: order.delivery?.warehouse || '',
+            delivery_index: order.delivery?.index || '',
+            tracking_url: trackingUrl || '#'
+        };
+
+        emailjs.send(EMAILJS_SERVICE_ID, "template_ttn_notification", templateParams)
+            .then(function(response) {
+                console.log('Email с ТТН успішно відправлено!', response.status, response.text);
+            }, function(error) {
+                console.error('Помилка відправки email з ТТН:', error);
+            });
+    }
+
+    // Очистка ресурсов
+    cleanup() {
+        if (this.currentOrdersUnsubscribe) {
+            this.currentOrdersUnsubscribe();
+            this.currentOrdersUnsubscribe = null;
+        }
+    }
 }
 
-// Функция обновления профиля
-function updateProfile(event) {
-    event.preventDefault();
-    
-    const newName = document.getElementById('profile-name-input').value.trim();
-    const newPassword = document.getElementById('profile-password-input').value.trim();
-    
-    const promises = [];
-    
-    // Обновляем имя, если оно изменилось
-    if (newName && newName !== currentUser.displayName) {
-        promises.push(
-            currentUser.updateProfile({
-                displayName: newName
-            })
-        );
-    }
-    
-    // Обновляем пароль, если введен новый
-    if (newPassword) {
-        promises.push(
-            currentUser.updatePassword(newPassword)
-        );
-    }
-    
-    if (promises.length === 0) {
-        showNotification("Немає змін для оновлення", "info");
-        return;
-    }
-    
-    Promise.all(promises)
-        .then(() => {
-            showNotification("Профіль успішно оновлено");
-            document.getElementById('user-name').textContent = newName || currentUser.email;
-            document.getElementById('profile-display-name').textContent = newName || 'Не вказано';
-            closeModal();
-        })
-        .catch(error => {
-            console.error("Помилка оновлення профілю: ", error);
-            let errorMessage = "Помилка оновлення профілю";
-            
-            switch (error.code) {
-                case 'auth/requires-recent-login':
-                    errorMessage = "Для зміни пароля потрібно повторно увійти в систему";
-                    break;
-                case 'auth/weak-password':
-                    errorMessage = "Пароль занадто слабкий";
-                    break;
+// Создаем глобальный экземпляр менеджера заказов
+const orderManager = new OrderManager();
+
+// ===== ОБНОВЛЕНИЕ СУЩЕСТВУЮЩИХ ФУНКЦИЙ =====
+
+// Обновляем функцию закрытия модального окна для очистки ресурсов
+const originalCloseModal = closeModal;
+closeModal = function() {
+    orderManager.cleanup();
+    originalCloseModal();
+};
+
+// Обновляем функцию viewOrders для использования нового менеджера
+function viewOrders() {
+    orderManager.viewOrders();
+}
+
+// Обновляем функцию viewOrderDetails
+function viewOrderDetails(orderId) {
+    orderManager.viewOrderDetails(orderId);
+}
+
+// ===== ДОБАВЛЯЕМ НОВЫЕ СТИЛИ =====
+
+function addOrdersStyles() {
+    const styles = `
+        <style>
+            /* Стили для улучшенной системы заказов */
+            .orders-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #f0f0f0;
             }
             
-            showNotification(errorMessage, "error");
-        });
-}
-
-// Функция загрузки статистики заказов пользователя
-function loadUserOrderStats() {
-    if (!currentUser) return;
-    
-    db.collection("orders")
-        .where("userId", "==", currentUser.uid)
-        .get()
-        .then((querySnapshot) => {
-            const ordersCount = querySnapshot.size;
-            document.getElementById('profile-orders-count').textContent = ordersCount;
-        })
-        .catch((error) => {
-            console.error("Помилка завантаження статистики замовлень: ", error);
-        });
-}
-
-// Функция для получения информации о статусе заказа
-function getOrderStatusInfo(status) {
-    const statusMap = {
-        'new': { class: 'status-new', text: 'Новий', icon: 'fas fa-clock' },
-        'processing': { class: 'status-processing', text: 'В обробці', icon: 'fas fa-cog' },
-        'shipped': { class: 'status-shipped', text: 'Відправлено', icon: 'fas fa-shipping-fast' },
-        'delivered': { class: 'status-delivered', text: 'Доставлено', icon: 'fas fa-check-circle' },
-        'cancelled': { class: 'status-cancelled', text: 'Скасовано', icon: 'fas fa-times-circle' }
-    };
-    
-    return statusMap[status] || statusMap['new'];
-}
-
-// Улучшенная функция просмотра заказов
-function viewOrders() {
-    if (!currentUser) {
-        openAuthModal();
-        showNotification("Увійдіть в систему для перегляду замовлень", "warning");
-        return;
-    }
-    
-    const modalContent = document.getElementById("modal-content");
-    modalContent.innerHTML = `
-        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
-        <h3>Мої замовлення</h3>
-        <div class="user-orders-container">
-            <div id="user-orders-list" style="max-height: 60vh; overflow-y: auto;"></div>
-        </div>
+            .orders-stats {
+                font-size: 0.9em;
+                color: #666;
+            }
+            
+            .orders-count {
+                background: #007bff;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-weight: bold;
+            }
+            
+            .orders-filter {
+                margin-bottom: 20px;
+            }
+            
+            .orders-filter select {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                background: white;
+            }
+            
+            .user-orders-list {
+                max-height: 60vh;
+                overflow-y: auto;
+                padding-right: 10px;
+            }
+            
+            .user-order-item {
+                border: 1px solid #e0e0e0;
+                border-radius: 12px;
+                padding: 20px;
+                margin-bottom: 15px;
+                background: white;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            
+            .user-order-item:hover {
+                box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                transform: translateY(-2px);
+            }
+            
+            .order-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 15px;
+            }
+            
+            .order-main-info h4 {
+                margin: 0 0 5px 0;
+                color: #333;
+                font-size: 1.1em;
+            }
+            
+            .order-date {
+                color: #666;
+                font-size: 0.85em;
+            }
+            
+            .order-status {
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 0.8em;
+                font-weight: bold;
+                white-space: nowrap;
+            }
+            
+            .status-new { background: #e3f2fd; color: #1976d2; }
+            .status-processing { background: #fff3e0; color: #f57c00; }
+            .status-shipped { background: #e8f5e8; color: #388e3c; }
+            .status-delivered { background: #e8f5e8; color: #388e3c; }
+            .status-cancelled { background: #ffebee; color: #d32f2f; }
+            
+            .summary-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 10px;
+                margin: 15px 0;
+            }
+            
+            .summary-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.9em;
+                color: #555;
+            }
+            
+            .user-order-actions {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-top: 15px;
+            }
+            
+            .btn-outline {
+                background: transparent;
+                border: 1px solid #007bff;
+                color: #007bff;
+            }
+            
+            .btn-outline:hover {
+                background: #007bff;
+                color: white;
+            }
+            
+            .btn-danger {
+                background: #dc3545;
+                color: white;
+                border: none;
+            }
+            
+            .btn-danger:hover {
+                background: #c82333;
+            }
+            
+            .loading-spinner {
+                text-align: center;
+                padding: 40px 20px;
+                color: #666;
+            }
+            
+            .loading-spinner i {
+                font-size: 2em;
+                margin-bottom: 15px;
+                color: #007bff;
+            }
+            
+            .empty-orders, .error-loading {
+                text-align: center;
+                padding: 40px 20px;
+                color: #666;
+            }
+            
+            .empty-orders i, .error-loading i {
+                font-size: 3em;
+                margin-bottom: 20px;
+                color: #ddd;
+            }
+            
+            .no-orders-found {
+                text-align: center;
+                padding: 40px 20px;
+                color: #666;
+                border: 2px dashed #ddd;
+                border-radius: 12px;
+                margin: 20px 0;
+            }
+            
+            .order-details-container {
+                max-height: 80vh;
+                overflow-y: auto;
+                padding-right: 10px;
+            }
+            
+            .order-details-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #f0f0f0;
+            }
+            
+            .order-status-badge {
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-weight: bold;
+                font-size: 0.9em;
+            }
+            
+            .ttn-section, .customer-info-section, 
+            .order-meta-section, .delivery-info-section,
+            .admin-controls-section, .order-items-section {
+                background: #f8f9fa;
+                padding: 20px;
+                border-radius: 12px;
+                margin-bottom: 20px;
+                border-left: 4px solid #007bff;
+            }
+            
+            .ttn-section.no-ttn {
+                background: #fff3cd;
+                border-left-color: #ffc107;
+            }
+            
+            .ttn-info {
+                display: grid;
+                gap: 10px;
+                margin: 15px 0;
+            }
+            
+            .ttn-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .ttn-number {
+                font-family: monospace;
+                font-weight: bold;
+                color: #007bff;
+            }
+            
+            .btn-track {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                background: #28a745;
+                color: white;
+                padding: 10px 15px;
+                border-radius: 6px;
+                text-decoration: none;
+                margin-top: 10px;
+            }
+            
+            .btn-track:hover {
+                background: #218838;
+                color: white;
+            }
+            
+            .info-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .info-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .info-item.full-width {
+                grid-column: 1 / -1;
+            }
+            
+            .customer-comment {
+                background: #f8f9fa;
+                padding: 12px;
+                border-radius: 6px;
+                border-left: 3px solid #007bff;
+                font-style: italic;
+                margin-top: 8px;
+                white-space: pre-wrap;
+                word-break: break-word;
+                line-height: 1.4;
+            }
+            
+            .admin-controls-grid {
+                display: grid;
+                grid-template-columns: 1fr auto auto;
+                gap: 15px;
+                align-items: center;
+            }
+            
+            .order-items-container {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            
+            .order-item-detail {
+                display: flex;
+                gap: 15px;
+                padding: 15px;
+                border: 1px solid #eee;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .order-item-detail:hover {
+                background: #f8f9fa;
+                border-color: #007bff;
+            }
+            
+            .order-item-image {
+                width: 80px;
+                height: 80px;
+                object-fit: cover;
+                border-radius: 6px;
+            }
+            
+            .order-item-info {
+                flex: 1;
+            }
+            
+            .order-item-title {
+                margin: 0 0 8px 0;
+                font-size: 1em;
+                color: #333;
+            }
+            
+            .order-item-meta {
+                display: flex;
+                gap: 15px;
+                margin-bottom: 8px;
+                font-size: 0.85em;
+                color: #666;
+            }
+            
+            .item-brand {
+                background: #e9ecef;
+                padding: 2px 8px;
+                border-radius: 4px;
+            }
+            
+            .order-item-comment {
+                margin: 8px 0;
+                padding: 8px 12px;
+                background: #f8f9fa;
+                border-radius: 6px;
+                border-left: 3px solid #28a745;
+                font-size: 0.9em;
+                color: #555;
+            }
+            
+            .order-item-pricing {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .item-price {
+                color: #666;
+            }
+            
+            .item-total {
+                font-weight: bold;
+                color: #333;
+            }
+            
+            .order-total-section {
+                background: white;
+                padding: 20px;
+                border-radius: 12px;
+                border: 2px solid #f0f0f0;
+            }
+            
+            .total-line {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 0;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .total-line:last-child {
+                border-bottom: none;
+            }
+            
+            .delivery-cost {
+                color: #666;
+                font-style: italic;
+            }
+            
+            .final-total {
+                font-size: 1.1em;
+                font-weight: bold;
+                color: #333;
+                padding-top: 15px;
+                border-top: 2px solid #eee;
+            }
+            
+            .order-actions-footer {
+                display: flex;
+                gap: 10px;
+                justify-content: flex-end;
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+            }
+            
+            .order-number {
+                font-family: monospace;
+                background: #f8f9fa;
+                padding: 4px 8px;
+                border-radius: 4px;
+                border: 1px solid #dee2e6;
+            }
+            
+            /* Стили для поля комментария */
+            .form-group textarea {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                resize: vertical;
+                min-height: 80px;
+                font-family: inherit;
+                font-size: 14px;
+                transition: border-color 0.3s ease;
+            }
+            
+            .form-group textarea:focus {
+                outline: none;
+                border-color: #007bff;
+                box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+            }
+            
+            .char-counter {
+                font-size: 0.8em;
+                color: #666;
+                text-align: right;
+                margin-top: 5px;
+            }
+            
+            .comment-section {
+                background: #f8f9fa;
+                border-radius: 8px;
+                padding: 15px;
+                margin: 15px 0;
+                border-left: 4px solid #007bff;
+            }
+            
+            @media (max-width: 768px) {
+                .orders-header {
+                    flex-direction: column;
+                    gap: 10px;
+                    align-items: flex-start;
+                }
+                
+                .order-header {
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                .summary-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .user-order-actions {
+                    flex-direction: column;
+                }
+                
+                .user-order-actions .btn {
+                    width: 100%;
+                    justify-content: center;
+                }
+                
+                .admin-controls-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .order-item-detail {
+                    flex-direction: column;
+                    text-align: center;
+                }
+                
+                .order-item-pricing {
+                    flex-direction: column;
+                    gap: 5px;
+                }
+                
+                .order-actions-footer {
+                    flex-direction: column;
+                }
+                
+                .order-actions-footer .btn {
+                    width: 100%;
+                    justify-content: center;
+                }
+            }
+        </style>
     `;
     
-    const ordersList = document.getElementById("user-orders-list");
-    ordersList.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i> Завантаження замовлень...</div>';
+    document.head.insertAdjacentHTML('beforeend', styles);
+}
+
+// ===== АДМИН-ПАНЕЛЬ =====
+
+function switchTab(tabId) {
+    const tabs = document.querySelectorAll(".tab");
+    const tabContents = document.querySelectorAll(".tab-content");
     
-    // Используем реальное слушание для обновлений в реальном времени
-    const unsubscribe = db.collection("orders")
-        .where("userId", "==", currentUser.uid)
+    tabs.forEach(tab => tab.classList.remove("active"));
+    tabContents.forEach(content => content.classList.remove("active"));
+    
+    document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add("active");
+    document.getElementById(tabId).classList.add("active");
+    
+    if (tabId === 'products-tab') {
+        loadAdminProducts();
+    }
+    
+    if (tabId === 'orders-tab') {
+        loadAdminOrders();
+    }
+}
+
+function loadAdminOrders() {
+    const ordersList = document.getElementById("admin-orders-list");
+    if (!ordersList) return;
+    
+    ordersList.innerHTML = '<p>Завантаження замовлень...</p>';
+    
+    db.collection("orders")
         .orderBy("createdAt", "desc")
         .onSnapshot((querySnapshot) => {
             if (querySnapshot.empty) {
-                ordersList.innerHTML = `
-                    <div class="empty-orders">
-                        <i class="fas fa-box-open"></i>
-                        <h4>У вас немає замовлень</h4>
-                        <p>Після оформлення замовлення воно з'явиться тут</p>
-                        <button class="btn btn-detail" onclick="closeModal(); applyFilters();">Перейти до товарів</button>
-                    </div>
-                `;
+                ordersList.innerHTML = '<p>Замовлень немає</p>';
                 return;
             }
             
-            let ordersHTML = '';
+            ordersList.innerHTML = '';
+            
             querySnapshot.forEach((doc) => {
                 const order = { id: doc.id, ...doc.data() };
                 const orderDate = order.createdAt ? order.createdAt.toDate().toLocaleString('uk-UA') : 'Дата не вказана';
-                const statusInfo = getOrderStatusInfo(order.status);
                 
-                const ttnSection = order.ttn ? `
-                    <div class="order-ttn-info">
-                        <p><strong>ТТН:</strong> ${order.ttn}</p>
-                        <a href="https://tracking.novaposhta.ua/#/uk/search/${order.ttn}" target="_blank" class="track-link">
-                            <i class="fas fa-external-link-alt"></i> Відстежити посилку
-                        </a>
+                let statusClass = 'status-new';
+                let statusText = 'Новий';
+                
+                if (order.status === 'processing') {
+                    statusClass = 'status-processing';
+                    statusText = 'В обробці';
+                } else if (order.status === 'shipped') {
+                    statusClass = 'status-shipped';
+                    statusText = 'Відправлено';
+                } else if (order.status === 'delivered') {
+                    statusClass = 'status-delivered';
+                    statusText = 'Доставлено';
+                } else if (order.status === 'cancelled') {
+                    statusClass = 'status-cancelled';
+                    statusText = 'Скасовано';
+                }
+                
+                const orderElement = document.createElement('div');
+                orderElement.className = 'admin-order-item';
+                orderElement.innerHTML = `
+                    <div class="order-header">
+                        <h4>Замовлення #${order.id}</h4>
+                        <span class="order-date">${orderDate}</span>
                     </div>
-                ` : '';
-                
-                // ДОБАВЛЕНО: Комментарий к заказу
-                const commentSection = order.comment ? `
-                    <div class="order-comment">
-                        <p><strong>Ваш коментар:</strong> "${order.comment}"</p>
+                    <div class="order-info">
+                        <p><strong>Клієнт:</strong> ${order.userName} (${order.userEmail}, ${order.userPhone})</p>
+                        ${order.comment ? `<p><strong>Коментар до замовлення:</strong> ${order.comment}</p>` : ''}
+                        <p><strong>Сума:</strong> ${formatPrice(order.total)} ₴</p>
+                        <p><strong>Доставка:</strong> ${order.delivery.service}</p>
+                        <p><strong>Статус:</strong> <span class="order-status ${statusClass}">${statusText}</span></p>
+                        ${order.ttn ? `<p><strong>ТТН:</strong> ${order.ttn}</p>` : ''}
                     </div>
-                ` : '';
-                
-                // ДОБАВЛЕНО: Кнопка отмены только для заказов со статусом "new"
-                const cancelButton = order.status === 'new' ? `
-                    <button class="btn btn-danger" onclick="cancelOrder('${order.id}')">
-                        <i class="fas fa-times"></i> Скасувати
-                    </button>
-                ` : '';
-                
-                ordersHTML += `
-                    <div class="user-order-item">
-                        <div class="order-header">
-                            <div class="order-main-info">
-                                <h4>Замовлення #${order.id}</h4>
-                                <span class="order-date">${orderDate}</span>
-                            </div>
-                            <div class="order-status-badge ${statusInfo.class}">
-                                <i class="${statusInfo.icon}"></i>
-                                ${statusInfo.text}
-                            </div>
-                        </div>
-                        
-                        <div class="order-summary">
-                            <p><strong>Сума:</strong> ${formatPrice(order.total)} ₴</p>
-                            <p><strong>Доставка:</strong> ${order.delivery.service}</p>
-                            <p><strong>Оплата:</strong> ${order.paymentMethod === 'cash' ? 'Готівкою при отриманні' : 'Онлайн-оплата карткою'}</p>
-                        </div>
-                        
-                        ${commentSection}
-                        ${ttnSection}
-                        
-                        <div class="order-actions">
-                            <button class="btn btn-detail" onclick="viewOrderDetails('${order.id}')">
-                                <i class="fas fa-eye"></i> Деталі
-                            </button>
-                            ${cancelButton}
-                        </div>
+                    <div class="admin-order-actions">
+                        <button class="btn btn-detail" onclick="orderManager.viewOrderDetails('${order.id}')">Деталі</button>
+                        <select onchange="orderManager.changeOrderStatus('${order.id}', this.value)">
+                            <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новий</option>
+                            <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>В обробці</option>
+                            <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Відправлено</option>
+                            <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Доставлено</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Скасовано</option>
+                        </select>
+                        <button class="btn" onclick="orderManager.addTTNToOrder('${order.id}')">ТТН</button>
+                        <button class="btn btn-danger" onclick="orderManager.deleteOrder('${order.id}')">Видалити</button>
                     </div>
                 `;
+                
+                ordersList.appendChild(orderElement);
             });
-            
-            ordersList.innerHTML = ordersHTML;
         }, (error) => {
             console.error("Помилка завантаження замовлень: ", error);
-            ordersList.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-triangle"></i> Помилка завантаження замовлень</div>';
+            ordersList.innerHTML = '<p>Помилка завантаження замовлень</p>';
         });
-    
-    // Сохраняем функцию отписки для использования при закрытии модального окна
-    window.currentOrdersUnsubscribe = unsubscribe;
-    
-    openModal();
-    setTimeout(optimizeModalForMobile, 100);
 }
 
-// Добавляем вкладку для модерации отзывов в админ-панель, если её нет
-function addReviewsTabIfNotExists() {
-    const adminTabs = document.querySelector('.admin-panel .tabs');
-    if (!adminTabs) return;
-    
-    // Проверяем, есть ли уже вкладка отзывов
-    const existingReviewsTab = adminTabs.querySelector('[onclick*="reviews-tab"]');
-    if (existingReviewsTab) return;
-    
-    // Добавляем вкладку отзывов
-    const reviewsTab = document.createElement('div');
-    reviewsTab.className = 'tab';
-    reviewsTab.setAttribute('onclick', "switchTab('reviews-tab-content')");
-    reviewsTab.innerHTML = 'Модерація відгуків';
-    adminTabs.appendChild(reviewsTab);
-    
-    // Добавляем контент для вкладки отзывов
-    const adminPanel = document.getElementById('admin-panel');
-    const reviewsContent = document.createElement('div');
-    reviewsContent.id = 'reviews-tab-content';
-    reviewsContent.className = 'tab-content';
-    reviewsContent.style.display = 'none';
-    reviewsContent.innerHTML = `
-        <h3>Модерація відгуків</h3>
-        <div id="reviews-moderation-container"></div>
-    `;
-    adminPanel.appendChild(reviewsContent);
-}
+// ===== ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ =====
 
-// Вспомогательная функция для перемешивания массива
-function shuffleArray(array) {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-}
-
-// Функция для адаптации заголовка
-function adjustHeaderTitle() {
-  const headerTitle = document.querySelector('.logo-name');
-  if (window.innerWidth <= 768) {
-    headerTitle.textContent = 'ZooMarket';
-  } else {
-    headerTitle.textContent = 'ZooMarket';
-  }
-}
-
-// Переключение источника данных
 function switchSource(source) {
-  currentFilters.source = source;
-  applyFilters();
-}
-
-// Функция переключения источника товаров
-function switchSource(source, element) {
+    currentFilters.source = source;
+    applyFilters();
+    
     document.querySelectorAll('.source-tab').forEach(tab => {
         tab.classList.remove('active');
-        tab.setAttribute('aria-selected', 'false');
     });
-    
-    if (element) {
-        element.classList.add('active');
-        element.setAttribute('aria-selected', 'true');
-    } else {
-        const tabButton = document.querySelector(`.source-tab[onclick*="${source}"]`);
-        if (tabButton) {
-            tabButton.classList.add('active');
-            tabButton.setAttribute('aria-selected', 'true');
-        }
-    }
-    
-    currentFilters.source = source === 'all' ? '' : source;
-    currentPage = 1;
-    
-    const titles = {
-        'all': 'Всі товари',
-        'products1.json': 'Корми для собак',
-        'products2.json': 'Корми для кішок',
-        'products3.json': 'Товари для гризунів',
-        'products4.json': 'Акваріумні товари',
-        'products5.json': 'Іграшки та аксесуари',
-        'products6.json': 'Ветеринарні препарати'
-    };
-    
-    document.getElementById('products-title').textContent = titles[source] || 'Каталог зоотоварів';
-    
-    applyFilters();
+    event.target.classList.add('active');
 }
 
-// Функция для оптимизации модальных окон на мобильных устройствах
-function optimizeModalForMobile() {
-  const modal = document.getElementById('modal');
-  const modalContent = document.querySelector('.modal-content');
-  
-  if (window.innerWidth <= 768) {
-    modal.classList.add('mobile-modal');
-    document.body.style.overflow = 'hidden';
-    
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        closeModal();
-      }
-    });
-  }
+function toggleFilters() {
+    const filters = document.getElementById('filters');
+    filters.classList.toggle('active');
 }
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-  initApp();
-  
-  // Инициализация EmailJS
-  emailjs.init(EMAILJS_USER_ID);
-  
-  // Закрытие мобильного меню при клике на ссылку
-  document.querySelectorAll('#mobile-menu a').forEach(link => {
-    link.addEventListener('click', () => {
-      document.getElementById('mobile-menu').classList.remove('active');
-    });
-  });
-  
-  // Добавляем стили для мобильных фильтров, если их еще нет
-  if (!document.getElementById('mobile-filters-styles')) {
-    const style = document.createElement('style');
-    style.id = 'mobile-filters-styles';
-    style.textContent = `
-      .mobile-filters-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        z-index: 9999;
-        display: none;
-      }
-      
-      .mobile-filters-overlay.active {
-        display: block;
-      }
-      
-      .mobile-filters-content {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: white;
-        max-height: 80vh;
-        overflow-y: auto;
-        border-radius: 20px 20px 0 0;
-        padding: 20px;
-        animation: slideUp 0.3s ease;
-      }
-      
-      @keyframes slideUp {
-        from {
-          transform: translateY(100%);
-        }
-        to {
-          transform: translateY(0);
-        }
-      }
-      
-      .mobile-filters-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
-      }
-      
-      .mobile-filters-body {
-        margin-bottom: 20px;
-      }
-      
-      .mobile-filters-footer {
-        position: sticky;
-        bottom: 0;
-        background: white;
-        padding: 15px 0;
-        border-top: 1px solid #eee;
-        display: flex;
-        gap: 10px;
-      }
-      
-      .mobile-filters-footer .btn {
-        flex: 1;
-      }
-    `;
-    document.head.appendChild(style);
-  }
-});
-
-// Добавляем функцию для обновления заголовка страницы при загрузке
-function updatePageTitle() {
-  const category = currentFilters.category;
-  const search = currentFilters.search;
-  
-  let title = 'ZooMarket - Інтернет-магазин зоотоварів';
-  
-  if (search) {
-    title = `Пошук: "${search}" - ZooMarket`;
-  } else if (category) {
-    title = `${translateCategory(category)} - ZooMarket`;
-  } else if (showingFavorites) {
-    title = 'Обрані товари - ZooMarket';
-  }
-  
-  document.title = title;
-}
-
-// Обновляем заголовок при применении фильтров
-const originalApplyFilters = applyFilters;
-applyFilters = function() {
-  originalApplyFilters();
-  updatePageTitle();
-};
-
-// Обновляем заголовок при переключении в избранное
-const originalToggleFavorites = toggleFavorites;
-toggleFavorites = function() {
-  originalToggleFavorites();
-  updatePageTitle();
-};
-
-// Функция открытия модального окна с правилами магазина
 function openRules() {
-    const modal = document.getElementById("rules-modal");
-    modal.classList.add("active");
-    document.body.style.overflow = 'hidden';
+    document.getElementById('rules-modal').classList.add('active');
 }
 
-// Функция закрытия модального окна с правилами
 function closeRulesModal() {
-    const modal = document.getElementById("rules-modal");
+    document.getElementById('rules-modal').classList.remove('active');
+}
+
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+// ===== МОДАЛЬНЫЕ ОКНА =====
+
+function openModal() {
+    document.getElementById("modal").classList.add("active");
+}
+
+function closeModal() {
+    const modal = document.getElementById("modal");
     modal.classList.remove("active");
     document.body.style.overflow = '';
+    
+    if (window.currentOrdersUnsubscribe) {
+        window.currentOrdersUnsubscribe();
+        window.currentOrdersUnsubscribe = null;
+    }
 }
 
-// Закрытие модального окна правил при клике вне контента
-document.addEventListener('click', function(e) {
-    const rulesModal = document.getElementById("rules-modal");
-    if (e.target === rulesModal) {
-        closeRulesModal();
+function openAuthModal() {
+    const modalContent = document.getElementById("modal-content");
+    modalContent.innerHTML = `
+        <button class="modal-close" onclick="closeModal()" aria-label="Закрити"><i class="fas fa-times" aria-hidden="true"></i></button>
+        <h3>Вхід в систему</h3>
+        <div class="auth-tabs">
+            <div class="auth-tab active" onclick="switchAuthTab('login')">Вхід</div>
+            <div class="auth-tab" onclick="switchAuthTab('register')">Реєстрація</div>
+            <div class="auth-tab" onclick="switchAuthTab('admin')">Адміністратор</div>
+        </div>
+        <form id="login-form" onsubmit="login(event)">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" required>
+            </div>
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" required>
+            </div>
+            <button type="submit" class="btn btn-detail">Увійти</button>
+        </form>
+        <form id="register-form" style="display:none;" onsubmit="register(event)">
+            <div class="form-group">
+                <label>Ім'я</label>
+                <input type="text" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" required>
+            </div>
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" required minlength="6">
+            </div>
+            <button type="submit" class="btn btn-detail">Зареєструватися</button>
+        </form>
+        <div id="admin-auth-form" style="display:none;">
+            <p>Для доступу до панелі адміністратора введіть пароль:</p>
+            <div class="form-group">
+                <label>Пароль адміністратора</label>
+                <input type="password" id="admin-password" required>
+            </div>
+            <button class="btn btn-admin" onclick="verifyAdminPassword()">Отримати права адміністратора</button>
+        </div>
+    `;
+    
+    openModal();
+}
+
+function switchAuthTab(tab) {
+    const loginForm = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
+    const adminForm = document.getElementById("admin-auth-form");
+    const tabs = document.querySelectorAll(".auth-tab");
+    
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    if (tab === 'login') {
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        adminForm.style.display = 'none';
+        tabs[0].classList.add('active');
+    } else if (tab === 'register') {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+        adminForm.style.display = 'none';
+        tabs[1].classList.add('active');
+    } else if (tab === 'admin') {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'none';
+        adminForm.style.display = 'block';
+        tabs[2].classList.add('active');
+    }
+}
+
+function login(event) {
+    event.preventDefault();
+    const email = event.target.querySelector('input[type="email"]').value;
+    const password = event.target.querySelector('input[type="password"]').value;
+    
+    auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+            showNotification("Вхід виконано успішно");
+            closeModal();
+        })
+        .catch(error => {
+            let message = "Помилка входу";
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    message = "Користувач не знайдений";
+                    break;
+                case 'auth/wrong-password':
+                    message = "Невірний пароль";
+                    break;
+            }
+            showNotification(message, "error");
+        });
+}
+
+function register(event) {
+    event.preventDefault();
+    const name = event.target.querySelector('input[type="text"]').value;
+    const email = event.target.querySelector('input[type="email"]').value;
+    const password = event.target.querySelector('input[type="password"]').value;
+    
+    auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            return userCredential.user.updateProfile({
+                displayName: name
+            });
+        })
+        .then(() => {
+            showNotification("Реєстрація виконана успішно");
+            closeModal();
+        })
+        .catch(error => {
+            console.error("Помилка реєстрації: ", error);
+            showNotification("Помилка реєстрації: " + error.message, "error");
+        });
+}
+
+function verifyAdminPassword() {
+    const password = document.getElementById("admin-password").value;
+    if (password === ADMIN_PASSWORD) {
+        if (!currentUser) {
+            showNotification("Спочатку увійдіть в систему", "error");
+            switchAuthTab('login');
+            return;
+        }
+        
+        const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
+        admins[currentUser.uid] = true;
+        localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
+        
+        document.getElementById("admin-panel").style.display = "block";
+        adminMode = true;
+        showNotification("Права адміністратора отримані");
+        closeModal();
+        
+        loadAdminOrders();
+        
+        // Показываем счетчик просмотров для администратора
+        setupPageCounter();
+    } else {
+        showNotification("Невірний пароль адміністратора", "error");
+    }
+}
+
+function promptAdminPassword() {
+    const password = prompt("Введіть пароль адміністратора:");
+    if (password === ADMIN_PASSWORD) {
+        if (!currentUser) {
+            showNotification("Спочатку увійдіть в систему", "error");
+            openAuthModal();
+            return;
+        }
+        
+        const admins = JSON.parse(localStorage.getItem(ADMINS_STORAGE_KEY) || '{}');
+        admins[currentUser.uid] = true;
+        localStorage.setItem(ADMINS_STORAGE_KEY, JSON.stringify(admins));
+        
+        document.getElementById("admin-panel").style.display = "block";
+        adminMode = true;
+        showNotification("Права адміністратора отримані");
+        
+        loadAdminOrders();
+        
+        // Показываем счетчик просмотров для администратора
+        setupPageCounter();
+    } else if (password) {
+        showNotification("Невірний пароль адміністратора", "error");
+    }
+}
+
+function checkAdminStatus(userId) {
+    db.collection("admins").doc(userId).get()
+        .then((doc) => {
+            if (doc.exists) {
+                document.getElementById("admin-panel").style.display = "block";
+                adminMode = true;
+                loadAdminOrders();
+                
+                // Показываем счетчик просмотров для администратора
+                setupPageCounter();
+            }
+        })
+        .catch((error) => {
+            console.error("Помилка перевірки прав адміністратора: ", error);
+        });
+}
+
+function logout() {
+    // Скрываем счетчик просмотров при выходе
+    const pageViewsContainer = document.getElementById('page-views-container');
+    if (pageViewsContainer) {
+        pageViewsContainer.style.display = 'none';
+    }
+    
+    auth.signOut()
+        .then(() => {
+            showNotification("Вихід виконано успішно");
+        })
+        .catch(error => {
+            console.error("Помилка виходу: ", error);
+            showNotification("Помилка виходу", "error");
+        });
+}
+
+// Добавляем обработчик для закрытия голосового поиска при нажатии Esc
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && voiceSearch.isListening) {
+        stopVoiceSearch();
+        showNotification('Голосовий пошук скасовано', 'info');
     }
 });
 
-// Закрытие модального окна правил по ESC
-document.addEventListener('keydown', function(e) {
-    const rulesModal = document.getElementById("rules-modal");
-    if (e.key === 'Escape' && rulesModal.classList.contains('active')) {
-        closeRulesModal();
-    }
+// Инициализация при загрузке страницы
+document.addEventListener("DOMContentLoaded", function() {
+    initApp();
 });
+
+// Глобальные переменные для улучшенного поиска
+let searchIndexReady = false;
+let searchLoading = false;
+
+let searchTimeout = null;
+const searchCache = new Map();
+const MAX_CACHE_SIZE = 100;
+const MAX_SEARCH_RESULTS = 1000;
+const ENHANCED_DEBOUNCE_DELAY = 200;
+const SEARCH_HISTORY_KEY = "fashionstore_search_history";
+const MAX_SEARCH_HISTORY = 10;
